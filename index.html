@@ -207,17 +207,17 @@
 
         const rankThresholds = [
             { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 },
-            { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }
+            { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, 
+            { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             renderRankGuide();
-            const saved = localStorage.getItem('gemify_vault_v6');
+            const saved = localStorage.getItem('gemify_vault_v7');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
-                    // 自动进入系统
                     const hero = document.getElementById('heroPage');
                     const app = document.getElementById('appPage');
                     hero.classList.add('hidden');
@@ -229,7 +229,7 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v6', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v7', JSON.stringify(session));
             updateGlobalXP();
         }
 
@@ -261,7 +261,7 @@
 
         function resetSystem() {
             if (confirm("DANGER: This will permanently delete all ambitions and XP. Continue?")) {
-                localStorage.removeItem('gemify_vault_v6');
+                localStorage.removeItem('gemify_vault_v7');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition();
                 updateGlobalXP();
@@ -459,7 +459,7 @@
             let rankIdx = 0;
             rankThresholds.forEach((r, i) => { if (total >= r.xp) rankIdx = i; });
             const currentRank = rankThresholds[rankIdx];
-            const next = rankThresholds[rankIdx + 1] || {xp: 2100};
+            const next = rankThresholds[rankIdx + 1] || {xp: 3000};
             document.getElementById('xpText').innerText = `${total}/${next.xp}`;
             document.getElementById('xpBar').style.width = `${Math.min((total / next.xp) * 100, 100)}%`;
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
@@ -468,13 +468,6 @@
         function toggleModal(show) {
             document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
         }
-
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !session.currentId) {
-                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
-                else startEvolution();
-            }
-        });
     </script>
 </body>
 </html>
