@@ -23,26 +23,21 @@
             min-height: 100vh;
         }
 
-        /* Utopian Tree Animation */
         .tree-node { animation: pulse-node 3s infinite ease-in-out; filter: drop-shadow(0 0 8px var(--pastel-purple)); }
         @keyframes pulse-node { 0%, 100% { r: 4; opacity: 0.6; } 50% { r: 7; opacity: 1; } }
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw-branch 4s forwards ease-out; }
         @keyframes draw-branch { to { stroke-dashoffset: 0; } }
 
-        /* Portal Transition */
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
 
-        /* Glassmorphism */
         .glass { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
 
-        /* Role Selection */
         .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
         .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
         .role-card.active .icon-box { background: var(--deep-purple); color: white; }
 
-        /* Rank Guide Highlight */
         .rank-row.active { color: var(--deep-purple); font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 12px; }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -71,7 +66,7 @@
         </div>
     </section>
 
-    <!-- PAGE 2: AWAKENING SYSTEM -->
+    <!-- PAGE 2: MAIN APP -->
     <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col md:flex-row portal-transition">
         
         <!-- SIDEBAR -->
@@ -111,26 +106,25 @@
                 </div>
             </div>
 
-            <!-- Reset Button -->
             <button onclick="resetSystem()" class="w-full py-3 px-4 border border-red-100 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-2">
                 <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reset System
             </button>
         </aside>
 
-        <!-- MAIN SETUP -->
-        <section id="setupSection" class="flex-1 flex flex-col items-center justify-start md:justify-center p-4 md:p-12 overflow-y-auto no-scrollbar">
-            <div class="max-w-2xl w-full glass p-6 md:p-12 rounded-[2.5rem] shadow-2xl space-y-8 my-4">
+        <!-- CENTER CONTENT AREA -->
+        <section class="flex-1 relative flex flex-col items-center justify-start md:justify-center p-4 md:p-12 overflow-y-auto no-scrollbar">
+            
+            <!-- SETUP VIEW (Visible before initialization) -->
+            <div id="setupSection" class="max-w-2xl w-full glass p-6 md:p-12 rounded-[2.5rem] shadow-2xl space-y-8 my-4">
                 <div class="text-center md:text-left">
                     <h2 class="text-3xl font-extrabold text-slate-900">System Awakening</h2>
                     <p class="text-slate-500">Initialize your evolution parameters.</p>
                 </div>
-
                 <div class="space-y-6">
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label>
                         <input type="text" id="inputName" placeholder="Enter name..." class="w-full min-h-[56px] px-6 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
                         <div class="grid grid-cols-2 gap-4">
@@ -144,17 +138,29 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
                         <input type="text" id="inputAmbition" placeholder="What is your goal?" class="w-full min-h-[56px] px-6 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
                     </div>
-                    
-                    <button onclick="initializeEvolution()" class="w-full min-h-[60px] bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">
-                        INITIALIZE EVOLUTION
-                    </button>
+                    <button onclick="initializeEvolution()" class="w-full min-h-[60px] bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
                 </div>
             </div>
+
+            <!-- DASHBOARD VIEW (Visible after initialization) -->
+            <div id="dashboardSection" class="hidden max-w-2xl w-full text-center space-y-8 p-6">
+                <div class="space-y-4">
+                    <div class="inline-block p-4 rounded-full bg-white shadow-xl animate-bounce">
+                        <i data-lucide="shield-check" class="w-12 h-12 text-purple-500"></i>
+                    </div>
+                    <h2 class="text-sm font-black tracking-[0.4em] text-purple-500 uppercase">System Online</h2>
+                    <h1 id="dashAmbition" class="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase"></h1>
+                    <p class="text-slate-500 max-w-md mx-auto">Your evolution path is active. Complete tasks to increase your Rank and unlock your true potential.</p>
+                </div>
+                <button onclick="toggleModal(true)" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto">
+                    VIEW EVOLUTION PATH <i data-lucide="layout-list" class="w-5 h-5"></i>
+                </button>
+            </div>
+
         </section>
 
         <!-- RESULT MODAL -->
@@ -174,7 +180,6 @@
     </main>
 
     <script>
-        // --- SYSTEM STATE ---
         let state = {
             initialized: false,
             name: '',
@@ -190,7 +195,6 @@
             { rank: 'B', xp: 300 }, { rank: 'A', xp: 400 }, { rank: 'S', xp: 500 }, { rank: 'SS', xp: 600 }
         ];
 
-        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             const savedSession = localStorage.getItem('GemifySession');
@@ -206,35 +210,29 @@
 
         function restoreSession() {
             if (!state.initialized) return;
-
-            // Hide Hero, Show App
             document.getElementById('heroPage').classList.add('hidden');
             const app = document.getElementById('awakeningPage');
-            app.classList.remove('hidden');
-            app.classList.remove('opacity-0');
-
-            // Restore UI Elements
+            app.classList.remove('hidden', 'opacity-0');
+            
             document.getElementById('statName').innerText = state.name;
+            document.getElementById('dashAmbition').innerText = state.ambition;
             updateSidebarIcon(state.role);
             updateXPUI();
-            
-            // Restore Logs and Tasks
             renderLogs();
             renderTasks();
             
-            // Hide setup form if already initialized
+            // Switch to Dashboard View
             document.getElementById('setupSection').classList.add('hidden');
-            toggleModal(true);
+            document.getElementById('dashboardSection').classList.remove('hidden');
         }
 
         function resetSystem() {
-            if (confirm("Are you sure? All evolution progress will be lost.")) {
+            if (confirm("Reset all progress?")) {
                 localStorage.removeItem('GemifySession');
                 location.reload();
             }
         }
 
-        // --- UI LOGIC ---
         function selectRole(role) {
             state.role = role;
             document.getElementById('role-male').classList.toggle('active', role === 'male');
@@ -268,26 +266,25 @@
         async function initializeEvolution() {
             const nameInput = document.getElementById('inputName').value.trim();
             const ambitionInput = document.getElementById('inputAmbition').value.trim();
-
-            if (!nameInput || !ambitionInput) return alert("Please provide both Name and Ambition.");
+            if (!nameInput || !ambitionInput) return alert("Fill all fields.");
 
             state.name = nameInput;
             state.ambition = ambitionInput;
             state.initialized = true;
             state.totalXP = 0;
-            state.logs = [];
-            
-            // Generate Initial Tasks
             state.tasks = [
-                { id: 0, t: `Research fundamentals of ${state.ambition}`, xp: 25, link: `https://www.youtube.com/results?search_query=${state.ambition}+basics`, completed: false },
-                { id: 1, t: "Establish a daily 1-hour focus block", xp: 15, link: "https://pomofocus.io/", completed: false },
-                { id: 2, t: "Identify 3 core tools for mastery", xp: 10, link: "https://www.google.com", completed: false },
-                { id: 3, t: "Join a community of practitioners", xp: 20, link: "https://reddit.com", completed: false }
+                { id: 0, t: `Research ${state.ambition} basics`, xp: 25, link: `https://www.youtube.com/results?search_query=${state.ambition}`, completed: false },
+                { id: 1, t: "Set up daily focus block", xp: 15, link: "https://pomofocus.io/", completed: false },
+                { id: 2, t: "Identify 3 core tools", xp: 10, link: "https://google.com", completed: false }
             ];
 
             document.getElementById('statName').innerText = state.name;
+            document.getElementById('dashAmbition').innerText = state.ambition;
             updateSidebarIcon(state.role);
+            
+            // Switch Views
             document.getElementById('setupSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
             
             toggleModal(true);
             await runInitialLogs();
@@ -296,7 +293,7 @@
         }
 
         async function runInitialLogs() {
-            const newLogs = [`[Gemify: Scanning Potential...]`, `[System: Mapping "${state.ambition}"...]`, `[System: Evolution Path Ready.]` ];
+            const newLogs = [`[Scanning Potential...]`, `[Mapping "${state.ambition}"...]`, `[Path Ready.]` ];
             const container = document.getElementById('logContainer');
             container.innerHTML = '';
             for (const log of newLogs) {
@@ -304,32 +301,25 @@
                 const p = document.createElement('p');
                 p.innerText = log;
                 container.appendChild(p);
-                container.scrollTop = container.scrollHeight;
                 await new Promise(r => setTimeout(r, 500));
             }
         }
 
         function renderLogs() {
-            const container = document.getElementById('logContainer');
-            container.innerHTML = state.logs.map(log => `<p>${log}</p>`).join('');
-            container.scrollTop = container.scrollHeight;
+            document.getElementById('logContainer').innerHTML = state.logs.map(l => `<p>${l}</p>`).join('');
         }
 
         function renderTasks() {
             const container = document.getElementById('taskContainer');
             container.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Stage 1: Awakening</h4>`;
-            
             state.tasks.forEach(task => {
                 const div = document.createElement('div');
                 div.className = "flex items-start gap-4 p-4 rounded-2xl bg-white/60 border border-purple-50 shadow-sm";
                 div.innerHTML = `
-                    <input type="checkbox" class="w-6 h-6 rounded-lg border-purple-200 text-purple-600" 
-                        ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
+                    <input type="checkbox" class="w-6 h-6 rounded-lg border-purple-200 text-purple-600" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})">
                     <div class="flex-1">
                         <p class="text-sm font-bold text-slate-700">${task.t}</p>
-                        <a href="${task.link}" target="_blank" class="text-[10px] text-purple-400 font-bold flex items-center gap-1 mt-1">
-                            <i data-lucide="external-link" class="w-3 h-3"></i> [Learning Resource]
-                        </a>
+                        <a href="${task.link}" target="_blank" class="text-[10px] text-purple-400 font-bold flex items-center gap-1 mt-1"><i data-lucide="external-link" class="w-3 h-3"></i> Resource</a>
                     </div>
                     <span class="text-[10px] font-black text-slate-400">+${task.xp}XP</span>
                 `;
@@ -341,40 +331,25 @@
         function toggleTask(id) {
             const task = state.tasks.find(t => t.id === id);
             task.completed = !task.completed;
-            
-            // Recalculate Total XP
             state.totalXP = state.tasks.reduce((acc, t) => t.completed ? acc + t.xp : acc, 0);
-            
             updateXPUI();
             saveSession();
         }
 
         function updateXPUI() {
-            // Find current rank
             let currentRank = 'E';
-            rankThresholds.forEach(r => {
-                if (state.totalXP >= r.xp) currentRank = r.rank;
-            });
-
-            const nextRankObj = rankThresholds.find(r => r.xp > state.totalXP) || rankThresholds[rankThresholds.length - 1];
-            const nextThreshold = nextRankObj.xp || 600;
-
-            // Update Sidebar
+            rankThresholds.forEach(r => { if (state.totalXP >= r.xp) currentRank = r.rank; });
+            const nextThreshold = (rankThresholds.find(r => r.xp > state.totalXP) || {xp:600}).xp;
             document.getElementById('xpText').innerText = `${state.totalXP}/${nextThreshold}`;
             document.getElementById('xpBar').style.width = `${Math.min((state.totalXP / nextThreshold) * 100, 100)}%`;
             document.getElementById('rankBadge').innerText = `${currentRank} Rank`;
-
-            // Update Roadmap Highlight
-            document.querySelectorAll('.rank-row').forEach(row => {
-                row.classList.toggle('active', row.dataset.rank === currentRank);
-            });
+            document.querySelectorAll('.rank-row').forEach(row => row.classList.toggle('active', row.dataset.rank === currentRank));
         }
 
-        // Enter Key Support
         document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !state.initialized) {
                 if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
-                else if (!state.initialized) initializeEvolution();
+                else initializeEvolution();
             }
         });
     </script>
