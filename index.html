@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -9,9 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lilac: #F3F1FF; /* 更柔和的淡紫色 */
+            --lilac: #F3F1FF;
             --pastel-purple: #B39DDB;
             --deep-purple: #7E57C2;
+            --glass: rgba(255, 255, 255, 0.8);
         }
 
         body {
@@ -19,38 +20,57 @@
             background-color: var(--lilac);
             color: #2D3748;
             overflow-x: hidden;
+            /* 防止手机端点击高亮 */
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 有机数字树动画 */
+        /* 流体字体 */
+        .fluid-h1 { font-size: clamp(2.5rem, 10vw, 6rem); line-height: 1.1; }
+        .fluid-h2 { font-size: clamp(1.2rem, 5vw, 2.5rem); }
+
+        /* 树动画 */
         .tree-node {
             animation: pulse-node 3s infinite ease-in-out;
-            filter: drop-shadow(0 0 5px var(--pastel-purple));
+            filter: drop-shadow(0 0 8px var(--pastel-purple));
         }
         @keyframes pulse-node {
-            0%, 100% { r: 3; opacity: 0.5; }
-            50% { r: 6; opacity: 1; }
+            0%, 100% { r: 4; opacity: 0.6; }
+            50% { r: 7; opacity: 1; }
         }
-
-        /* 页面切换动画 */
-        .page-transition {
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        .branch {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw-branch 4s forwards ease-out;
         }
+        @keyframes draw-branch { to { stroke-dashoffset: 0; } }
 
-        /* 玻璃拟态 */
+        /* 页面切换 */
+        .portal-transition {
+            transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
+
         .glass {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* 响应式 Modal */
-        .modal-slide {
-            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        .system-log-glass {
+            background: rgba(179, 157, 219, 0.1);
+            border: 1px solid var(--pastel-purple);
+            color: var(--deep-purple);
+            font-family: 'Fira Code', monospace;
         }
 
-        /* 隐藏滚动条但保留功能 */
+        /* 响应式 Modal 逻辑 */
+        .modal-container {
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+        }
+
+        /* 隐藏滚动条 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -58,75 +78,85 @@
 <body>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="min-h-screen flex flex-col lg:flex-row items-center justify-center p-6 lg:p-20 gap-8 lg:gap-16 page-transition">
-        <!-- 有机数字树容器 -->
-        <div class="w-full lg:w-1/2 flex justify-center items-center order-1 lg:order-1">
-            <svg viewBox="0 0 400 400" class="w-full max-w-[300px] lg:max-w-[450px] h-auto drop-shadow-2xl">
-                <path d="M200 380 Q200 250 200 120" stroke="#B39DDB" stroke-width="6" fill="none" />
-                <path d="M200 300 Q120 250 80 180" stroke="#B39DDB" stroke-width="3" fill="none" />
-                <path d="M200 250 Q280 200 320 120" stroke="#B39DDB" stroke-width="3" fill="none" />
-                <circle cx="80" cy="180" r="5" fill="#7E57C2" class="tree-node" />
-                <circle cx="320" cy="120" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 1s" />
-                <circle cx="200" cy="120" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 2s" />
+    <section id="heroPage" class="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-8 md:gap-12 portal-transition">
+        <!-- 树在手机端缩小并在上方 -->
+        <div class="w-full md:w-1/2 flex justify-center items-center">
+            <svg viewBox="0 0 400 500" class="w-full max-w-[280px] md:max-w-[400px] h-auto drop-shadow-2xl">
+                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" class="branch" />
+                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
+                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 1s" />
+                <path d="M200 200 Q150 100 200 50" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 1.5s" />
+                <circle cx="80" cy="200" r="5" fill="#7E57C2" class="tree-node" />
+                <circle cx="320" cy="150" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 0.7s" />
+                <circle cx="200" cy="50" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 1.4s" />
             </svg>
         </div>
 
-        <!-- 文字内容 -->
-        <div class="w-full lg:w-1/2 text-center lg:text-left space-y-6 order-2 lg:order-2">
+        <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
             <div class="space-y-2">
-                <h2 class="text-xs lg:text-sm font-black tracking-[0.4em] text-purple-500 uppercase">Ambition Pilot</h2>
-                <h1 class="text-5xl lg:text-8xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
-                <p class="text-xl lg:text-3xl font-light text-slate-500">Discover. Define. Dominate.</p>
+                <h2 class="text-xs md:text-sm font-black tracking-[0.4em] text-purple-500 uppercase">Ambition Pilot</h2>
+                <h1 class="fluid-h1 font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
+                <p class="fluid-h2 font-light text-slate-500 leading-tight">Discover. Define. Dominate.</p>
             </div>
-            <button onclick="enterSystem()" class="w-full max-w-xs lg:w-auto min-h-[56px] px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-xl flex items-center justify-center gap-3 mx-auto lg:mx-0">
+            <button onclick="enterSystem()" class="w-full md:w-auto min-h-[56px] px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-xl flex items-center justify-center gap-3 mx-auto md:mx-0">
                 ENTER THE SYSTEM
-                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                <i data-lucide="zap" class="w-5 h-5"></i>
             </button>
         </div>
     </section>
 
     <!-- PAGE 2: AWAKENING SYSTEM -->
-    <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col lg:flex-row page-transition bg-[#F3F1FF]">
+    <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col md:flex-row portal-transition bg-[#F3F1FF]">
         
-        <!-- SIDEBAR (手机端为顶部状态栏，桌面端为侧边栏) -->
-        <aside class="w-full lg:w-[320px] glass border-b lg:border-r border-white/50 p-4 lg:p-8 flex flex-row lg:flex-col items-center lg:items-start justify-between lg:justify-start gap-4 z-20">
-            <div class="flex items-center gap-3">
-                <div id="roleIcon" class="w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-                    <i data-lucide="user" class="w-5 h-5 lg:w-7 lg:h-7"></i>
+        <!-- SIDEBAR: 手机端为顶部条，桌面端为侧边栏 -->
+        <aside class="w-full md:w-[300px] glass border-b md:border-r border-white/50 p-4 md:p-8 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-4 md:gap-6 z-20">
+            <div class="flex items-center gap-3 md:gap-4">
+                <div id="roleIcon" class="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
+                    <i data-lucide="user" class="w-5 h-5"></i>
                 </div>
                 <div>
-                    <h3 id="statName" class="font-bold text-slate-800 text-sm lg:text-lg">Player</h3>
-                    <span id="rankBadge" class="text-[9px] lg:text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
+                    <h3 id="statName" class="font-bold text-slate-800 text-sm md:text-base">Player</h3>
+                    <span id="rankBadge" class="text-[9px] md:text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
                 </div>
             </div>
 
-            <div class="flex-1 lg:w-full space-y-1 lg:space-y-3">
-                <div class="flex justify-between text-[9px] lg:text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            <div class="flex-1 md:w-full space-y-1 md:space-y-2">
+                <div class="flex justify-between text-[9px] md:text-[10px] font-black text-slate-400 uppercase">
                     <span>XP Progress</span>
                     <span id="xpText">0/100</span>
                 </div>
-                <div class="w-full h-2 bg-white/50 rounded-full overflow-hidden">
+                <div class="w-full h-1.5 md:h-2 bg-white/50 rounded-full overflow-hidden">
                     <div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+            
+            <!-- 手机端隐藏 Rank Guide 以节省空间 -->
+            <div class="hidden md:block w-full pt-6">
+                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Rank Guide</h4>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between p-2 rounded-lg bg-white/30"><span>E Rank</span><span>Base</span></div>
+                    <div class="flex justify-between p-2 rounded-lg bg-white/30"><span>D Rank</span><span>100 XP</span></div>
+                    <div class="flex justify-between p-2 rounded-lg bg-white/30"><span>C Rank</span><span>200 XP</span></div>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN SETUP (表单区域) -->
-        <section class="flex-1 flex flex-col items-center justify-start lg:justify-center p-6 lg:p-12 overflow-y-auto no-scrollbar">
-            <div class="max-w-xl w-full glass p-6 lg:p-10 rounded-[2rem] lg:rounded-[3rem] shadow-2xl space-y-6 lg:space-y-8 my-4">
-                <div class="text-center lg:text-left">
-                    <h2 class="text-2xl lg:text-4xl font-extrabold text-slate-900">Awakening</h2>
-                    <p class="text-sm lg:text-base text-slate-500">Initialize your evolution parameters.</p>
+        <!-- MAIN SETUP: 增加滚动支持 -->
+        <section class="flex-1 flex flex-col items-center justify-start md:justify-center p-4 md:p-12 overflow-y-auto no-scrollbar">
+            <div class="max-w-xl w-full glass p-6 md:p-12 rounded-[2rem] md:rounded-[2.5rem] shadow-2xl space-y-6 md:space-y-8 my-4">
+                <div class="text-center md:text-left">
+                    <h2 class="text-2xl md:text-3xl font-extrabold text-slate-900">System Awakening</h2>
+                    <p class="text-sm md:text-base text-slate-500">Initialize your evolution parameters.</p>
                 </div>
 
                 <div class="space-y-4">
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label>
-                        <input type="text" id="inputName" placeholder="Enter name..." class="w-full min-h-[52px] px-5 rounded-xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
+                        <input type="text" id="inputName" placeholder="Enter name..." class="w-full min-h-[52px] px-5 rounded-xl md:rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Character Role</label>
-                        <select id="inputGender" class="w-full min-h-[52px] px-5 rounded-xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
+                        <select id="inputGender" class="w-full min-h-[52px] px-5 rounded-xl md:rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
                             <option value="male">Warrior (Male)</option>
                             <option value="female">Mage (Female)</option>
                             <option value="neutral">Architect (Neutral)</option>
@@ -134,34 +164,31 @@
                     </div>
                     <div class="space-y-1">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
-                        <input type="text" id="inputAmbition" placeholder="What is your goal?" class="w-full min-h-[52px] px-5 rounded-xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
+                        <input type="text" id="inputAmbition" placeholder="What is your goal?" class="w-full min-h-[52px] px-5 rounded-xl md:rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
                     </div>
                     
-                    <button onclick="initializeEvolution()" class="w-full min-h-[56px] bg-slate-900 text-white font-black rounded-xl lg:rounded-2xl shadow-xl hover:bg-purple-600 transition-all mt-4">
+                    <button onclick="initializeEvolution()" class="w-full min-h-[56px] bg-slate-900 text-white font-black rounded-xl md:rounded-2xl shadow-xl hover:bg-purple-600 transition-all mt-4">
                         INITIALIZE SYSTEM
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- RESULT MODAL (手机端全屏，桌面端 35%) -->
-        <aside id="resultModal" class="fixed inset-y-0 right-0 w-full lg:w-[35%] glass lg:m-4 lg:rounded-[2.5rem] shadow-2xl z-50 modal-slide translate-x-full flex flex-col overflow-hidden">
-            <div class="p-6 flex justify-between items-center border-b border-purple-100">
-                <div>
-                    <h3 class="font-black text-slate-800 uppercase text-lg">Evolution Path</h3>
-                    <p class="text-[10px] text-purple-500 font-bold">SYSTEM ACTIVE</p>
-                </div>
-                <button onclick="toggleModal(false)" class="p-3 bg-purple-50 text-purple-500 rounded-xl">
+        <!-- RESULT MODAL: 手机端 94% 宽度，居中显示 -->
+        <aside id="resultModal" class="fixed top-2 bottom-2 right-2 left-2 md:left-auto md:top-4 md:right-4 md:bottom-4 w-auto md:w-[35%] glass rounded-[2rem] md:rounded-[2.5rem] shadow-2xl border border-white/50 modal-container translate-x-[120%] md:translate-x-[120%] flex flex-col overflow-hidden">
+            <div class="p-5 md:p-8 flex justify-between items-center border-b border-purple-100">
+                <h3 class="font-black text-slate-800 uppercase text-sm md:text-base tracking-tighter">Evolution Path</h3>
+                <button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div id="logContainer" class="mx-6 mt-4 p-4 bg-purple-50/50 border border-purple-100 rounded-xl h-28 overflow-y-auto text-[10px] font-mono text-purple-700">
+            <div id="logContainer" class="mx-5 mt-4 p-4 system-log-glass rounded-xl h-24 md:h-32 overflow-y-auto text-[10px] leading-relaxed">
                 <p>[System: Awaiting Input...]</p>
             </div>
 
-            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-                <!-- 任务列表 -->
+            <div id="taskContainer" class="flex-1 overflow-y-auto p-5 md:p-8 space-y-6 no-scrollbar">
+                <!-- Tasks injected here -->
             </div>
         </aside>
 
@@ -174,28 +201,29 @@
     <script>
         lucide.createIcons();
 
-        // 进入系统动画
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const awakening = document.getElementById('awakeningPage');
-            hero.classList.add('opacity-0', 'scale-95');
+            hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
                 awakening.classList.remove('hidden');
-                setTimeout(() => awakening.classList.add('opacity-100'), 50);
+                setTimeout(() => awakening.classList.remove('opacity-0'), 50);
             }, 600);
         }
 
-        // 控制 Modal 显示
         function toggleModal(show) {
             const modal = document.getElementById('resultModal');
             const tab = document.getElementById('statusTab');
-            modal.style.transform = show ? 'translateX(0)' : 'translateX(100%)';
-            if (!show) tab.classList.remove('hidden');
-            else tab.classList.add('hidden');
+            // 手机端和桌面端统一使用 translateX(0) 呼出
+            modal.style.transform = show ? 'translateX(0)' : 'translateX(120%)';
+            
+            // 只有在初始化过之后，关闭 modal 才显示悬浮按钮
+            if (document.getElementById('taskContainer').innerHTML !== "") {
+                tab.classList.toggle('hidden', show);
+            }
         }
 
-        // 初始化进化路径
         async function initializeEvolution() {
             const name = document.getElementById('inputName').value || "Player";
             const ambition = document.getElementById('inputAmbition').value;
@@ -208,7 +236,7 @@
         }
 
         async function runLogs(ambition) {
-            const logs = [`[Gemify: Scanning Potential...]`, `[System: Mapping "${ambition}"...]`, `[System: Path Generated.]` ];
+            const logs = [`[Gemify: Scanning Potential...]`, `[System: Mapping "${ambition}"...]`, `[System: Path Ready.]` ];
             const container = document.getElementById('logContainer');
             container.innerHTML = '';
             for (const log of logs) {
@@ -222,12 +250,11 @@
 
         function generateTasks(ambition) {
             const container = document.getElementById('taskContainer');
-            container.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4">Stage 1: Awakening</h4>`;
+            container.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Stage 1: Awakening</h4>`;
             
             const tasks = [
                 { t: `Research fundamentals of ${ambition}`, xp: 20, link: "https://youtube.com" },
-                { t: "Establish a daily focus block", xp: 15, link: "https://coursera.org" },
-                { t: "Complete initial skill assessment", xp: 10, link: "https://google.com" }
+                { t: "Establish a daily focus block", xp: 15, link: "https://coursera.org" }
             ];
 
             tasks.forEach(task => {
@@ -238,7 +265,7 @@
                     <div class="flex-1">
                         <p class="text-sm font-bold text-slate-700">${task.t}</p>
                         <a href="${task.link}" target="_blank" class="text-[10px] text-purple-400 font-bold flex items-center gap-1 mt-1">
-                            <i data-lucide="link" class="w-3 h-3"></i> LEARN MORE
+                            <i data-lucide="external-link" class="w-3 h-3"></i> LEARN MORE
                         </a>
                     </div>
                     <span class="text-[10px] font-black text-slate-400">+${task.xp}XP</span>
@@ -251,18 +278,14 @@
         let currentXP = 0;
         function updateXP(amount, cb) {
             currentXP += cb.checked ? amount : -amount;
-            const bar = document.getElementById('xpBar');
-            const text = document.getElementById('xpText');
+            document.getElementById('xpText').innerText = `${currentXP}/100`;
+            document.getElementById('xpBar').style.width = `${Math.min(currentXP, 100)}%`;
+            
             const badge = document.getElementById('rankBadge');
-            
-            text.innerText = `${currentXP}/100`;
-            bar.style.width = `${Math.min(currentXP, 100)}%`;
-            
             if (currentXP >= 100) badge.innerText = "D Rank";
             else badge.innerText = "E Rank";
         }
 
-        // 监听 Enter 键
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
