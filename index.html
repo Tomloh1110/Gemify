@@ -9,10 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lilac: #E6E6FA;
+            --lilac: #F3F1FF;
             --pastel-purple: #B39DDB;
             --deep-purple: #7E57C2;
-            --glass: rgba(255, 255, 255, 0.7);
+            --glass: rgba(255, 255, 255, 0.75);
         }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -21,128 +21,167 @@
             overflow: hidden;
             height: 100vh;
         }
+        /* 树动画 */
+        .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        .tree-node { animation: pulse 3s infinite ease-in-out; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
+
+        /* UI 组件 */
         .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
-        .sidebar-item { transition: all 0.2s ease; cursor: pointer; border-radius: 12px; }
-        .sidebar-item:hover { background: rgba(179, 157, 219, 0.2); }
-        .sidebar-item.active { background: white; border: 1px solid var(--pastel-purple); box-shadow: 0 4px 12px rgba(179, 157, 219, 0.1); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
+        
+        .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
+        
+        .sidebar-item { transition: all 0.2s ease; cursor: pointer; }
+        .sidebar-item:hover { background: rgba(179, 157, 219, 0.15); }
+        .sidebar-item.active { background: white; border: 1px solid var(--pastel-purple); }
+
+        .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col items-center justify-center z-[100] bg-white portal-transition">
-        <div class="text-center space-y-6">
-            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">System Awakening</h2>
+    <!-- PAGE 1: HERO SECTION (带树的经典版) -->
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#FDFCFE] portal-transition">
+        <div class="w-full md:w-1/2 flex justify-center items-center">
+            <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
+                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" class="branch" />
+                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
+                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 1s" />
+                <circle cx="80" cy="200" r="5" fill="#7E57C2" class="tree-node" />
+                <circle cx="320" cy="150" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 0.7s" />
+                <circle cx="200" cy="50" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 1.4s" />
+            </svg>
+        </div>
+        <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
+            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Ambition Pilot</h2>
             <h1 class="text-7xl md:text-9xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
-            <p class="text-xl font-light text-slate-500">Discover. Define. Dominate.</p>
-            <button onclick="enterSystem()" class="px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl">ENTER THE SYSTEM</button>
+            <p class="text-xl md:text-2xl font-light text-slate-500">Discover. Define. Dominate.</p>
+            <button onclick="enterSystem()" class="px-12 py-5 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl flex items-center gap-3 mx-auto md:mx-0">
+                ENTER THE SYSTEM <i data-lucide="zap"></i>
+            </button>
         </div>
     </section>
 
-    <!-- MAIN APP LAYOUT -->
+    <!-- MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 portal-transition">
         
         <!-- SIDEBAR (Gemini Style) -->
-        <aside id="sidebar" class="w-[300px] glass border-r border-white/50 flex flex-col p-4 z-50">
-            <!-- Character Stats -->
-            <div class="p-4 mb-4 bg-white/50 rounded-3xl border border-purple-100">
-                <div class="flex items-center gap-3 mb-4">
-                    <div id="roleIcon" class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white">
+        <aside class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50">
+            <!-- Stats -->
+            <div class="mb-6 space-y-4">
+                <div class="flex items-center gap-4">
+                    <div id="sidebarIcon" class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
                         <i data-lucide="user"></i>
                     </div>
                     <div>
-                        <h3 id="statName" class="font-bold text-sm">Player</h3>
-                        <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
+                        <h3 id="statName" class="font-bold text-slate-800">Player</h3>
+                        <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
                     </div>
                 </div>
-                <div class="space-y-1">
-                    <div class="flex justify-between text-[9px] font-black text-slate-400 uppercase">
+                <div class="space-y-2">
+                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase">
                         <span>Global XP</span>
                         <span id="xpText">0/100</span>
                     </div>
-                    <div class="w-full h-1.5 bg-white rounded-full overflow-hidden">
+                    <div class="w-full h-2 bg-white/50 rounded-full overflow-hidden">
                         <div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- New Ambition Button -->
-            <button onclick="createNewAmbition()" class="flex items-center gap-3 w-full p-4 mb-6 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg">
+            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-6 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg">
                 <i data-lucide="plus" class="w-4 h-4"></i> New Ambition
             </button>
 
-            <!-- History List -->
+            <!-- History -->
             <div class="flex-1 overflow-y-auto no-scrollbar space-y-2">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase px-2 mb-2 tracking-widest">Ambition Vault</h4>
-                <div id="vaultList" class="space-y-1">
-                    <!-- History items injected here -->
-                </div>
+                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ambition Vault</h4>
+                <div id="vaultList" class="space-y-2"></div>
             </div>
 
-            <!-- Reset -->
-            <button onclick="resetSystem()" class="mt-4 p-3 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all">
-                Reset System
+            <button onclick="resetSystem()" class="mt-4 py-3 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all flex items-center justify-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reset System
             </button>
         </aside>
 
         <!-- CENTER CONTENT -->
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
             
-            <!-- Input Form (State: New) -->
+            <!-- SETUP FORM -->
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
                 <div class="text-center">
                     <h2 class="text-3xl font-extrabold text-slate-900">Initialize Evolution</h2>
-                    <p class="text-slate-500 text-sm">What is your core ambition?</p>
+                    <p class="text-slate-500 text-sm">Define your parameters for the system.</p>
                 </div>
-                <div class="space-y-4">
-                    <input type="text" id="inputName" placeholder="Player Name" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="setRole('Warrior')" id="btnWarrior" class="p-4 rounded-2xl border-2 border-transparent bg-white/50 hover:border-purple-300 transition-all flex flex-col items-center gap-2">
-                            <i data-lucide="sword" class="text-slate-700"></i><span class="text-xs font-bold">Warrior</span>
-                        </button>
-                        <button onclick="setRole('Mage')" id="btnMage" class="p-4 rounded-2xl border-2 border-transparent bg-white/50 hover:border-purple-300 transition-all flex flex-col items-center gap-2">
-                            <i data-lucide="wand-2" class="text-slate-700"></i><span class="text-xs font-bold">Mage</span>
-                        </button>
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label>
+                        <input type="text" id="inputName" placeholder="Enter name..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
                     </div>
-                    <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
-                    <button onclick="startEvolution()" class="w-full py-4 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE</button>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-6 rounded-3xl glass flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><i data-lucide="sword"></i></div>
+                                <span class="text-xs font-bold uppercase tracking-widest">Warrior</span>
+                            </div>
+                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-6 rounded-3xl glass flex flex-col items-center gap-3">
+                                <div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><i data-lucide="wand-2"></i></div>
+                                <span class="text-xs font-bold uppercase tracking-widest">Mage</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
+                        <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
+                    </div>
+                    <button onclick="startEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
                 </div>
             </div>
 
-            <!-- Dashboard (State: Active Ambition) -->
+            <!-- DASHBOARD -->
             <div id="dashboard" class="hidden text-center space-y-6">
-                <div class="w-20 h-20 bg-white rounded-3xl shadow-2xl flex items-center justify-center mx-auto mb-4">
-                    <i data-lucide="shield-check" class="w-10 h-10 text-purple-500"></i>
+                <div class="w-24 h-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-6 animate-bounce">
+                    <i data-lucide="shield-check" class="w-12 h-12 text-purple-500"></i>
                 </div>
-                <h1 id="activeTitle" class="text-5xl font-black text-slate-900 tracking-tighter uppercase"></h1>
-                <p class="text-slate-500 max-w-md mx-auto">Evolution path is active. Check the Quest Log to proceed.</p>
-                <button onclick="toggleModal(true)" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all">OPEN QUEST LOG</button>
+                <h1 id="activeTitle" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase"></h1>
+                <p class="text-slate-500 max-w-md mx-auto">Evolution path is active. Complete tasks to increase your Rank.</p>
+                <button onclick="toggleModal(true)" class="px-10 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto">
+                    VIEW QUEST LOG <i data-lucide="layout-list"></i>
+                </button>
             </div>
         </section>
 
-        <!-- RIGHT MODAL (Quest Log) -->
-        <aside id="questModal" class="fixed top-4 right-4 bottom-4 w-[35%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
+        <!-- RESULT MODAL (Quest Log) -->
+        <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center">
-                <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Quest Log</h3>
+                <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3>
                 <button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
-                <!-- Tasks injected here -->
+            <!-- System Log Thinking Area -->
+            <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed">
+                <p>[System: Awaiting Input...]</p>
             </div>
+            <!-- Task List -->
+            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
         </aside>
 
     </main>
 
     <script>
-        // --- DATA ARCHITECTURE ---
+        // --- STATE ---
         let session = {
             playerName: "Player",
             playerRole: "Warrior",
             currentId: null,
-            ambitionVault: [] // Array of {id, title, role, tasks: [{name, xp, completed, url}]}
+            ambitionVault: []
         };
 
         const rankThresholds = [
@@ -150,10 +189,10 @@
             { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }
         ];
 
-        // --- CORE LOGIC ---
+        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const saved = localStorage.getItem('gemify_session');
+            const saved = localStorage.getItem('gemify_vault_v2');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0) {
@@ -165,7 +204,7 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_session', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v2', JSON.stringify(session));
             updateGlobalXP();
         }
 
@@ -177,11 +216,16 @@
             }, 600);
         }
 
-        function setRole(role) {
+        function selectRole(role) {
             session.playerRole = role;
-            document.getElementById('btnWarrior').classList.toggle('active', role === 'Warrior');
-            document.getElementById('btnMage').classList.toggle('active', role === 'Mage');
-            document.getElementById('roleIcon').innerHTML = `<i data-lucide="${role === 'Warrior' ? 'sword' : 'wand-2'}"></i>`;
+            document.getElementById('role-Warrior').classList.toggle('active', role === 'Warrior');
+            document.getElementById('role-Mage').classList.toggle('active', role === 'Mage');
+            updateSidebarIcon(role);
+        }
+
+        function updateSidebarIcon(role) {
+            const icon = role === 'Warrior' ? 'sword' : 'wand-2';
+            document.getElementById('sidebarIcon').innerHTML = `<i data-lucide="${icon}"></i>`;
             lucide.createIcons();
         }
 
@@ -189,14 +233,15 @@
             session.currentId = null;
             document.getElementById('setupForm').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('inputAmbition').value = '';
             toggleModal(false);
             renderVault();
         }
 
-        function startEvolution() {
+        async function startEvolution() {
             const name = document.getElementById('inputName').value.trim();
             const title = document.getElementById('inputAmbition').value.trim();
-            if (!title) return alert("State your ambition.");
+            if (!title) return alert("Please state your ambition.");
 
             if (name) session.playerName = name;
             const id = Date.now();
@@ -213,20 +258,44 @@
             };
 
             session.ambitionVault.unshift(newAmbition);
-            loadAmbition(id);
+            session.currentId = id;
+            
+            // UI Transition
+            document.getElementById('statName').innerText = session.playerName;
+            document.getElementById('activeTitle').innerText = title;
+            document.getElementById('setupForm').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            // Auto Open Modal and Run Logs
+            toggleModal(true);
+            await runLogs(title);
+            
+            renderTasks(newAmbition);
             renderVault();
             save();
+        }
+
+        async function runLogs(title) {
+            const logs = [`[Gemify: Scanning Potential...]`, `[System: Mapping "${title}"...]`, `[System: Evolution Path Ready.]` ];
+            const container = document.getElementById('logContainer');
+            container.innerHTML = '';
+            for (const log of logs) {
+                const p = document.createElement('p');
+                p.innerText = `> ${log}`;
+                container.appendChild(p);
+                container.scrollTop = container.scrollHeight;
+                await new Promise(r => setTimeout(r, 600));
+            }
         }
 
         function loadAmbition(id) {
             session.currentId = id;
             const data = session.ambitionVault.find(a => a.id === id);
-            
             document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = data.title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            
+            updateSidebarIcon(data.role);
             renderTasks(data);
             renderVault();
             save();
@@ -237,9 +306,9 @@
             list.innerHTML = '';
             session.ambitionVault.forEach(ambition => {
                 const div = document.createElement('div');
-                div.className = `sidebar-item p-3 text-xs font-bold flex items-center gap-2 ${session.currentId === ambition.id ? 'active' : ''}`;
+                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center gap-3 ${session.currentId === ambition.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(ambition.id);
-                div.innerHTML = `<i data-lucide="message-square" class="w-3 h-3 opacity-50"></i> <span class="truncate">${ambition.title}</span>`;
+                div.innerHTML = `<i data-lucide="target" class="w-4 h-4 text-purple-400"></i> <span class="truncate">${ambition.title}</span>`;
                 list.appendChild(div);
             });
             lucide.createIcons();
@@ -247,27 +316,29 @@
 
         function renderTasks(ambition) {
             const container = document.getElementById('taskContainer');
-            container.innerHTML = '';
+            container.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Stage 1: Awakening</h4>`;
             ambition.tasks.forEach((task, index) => {
                 const div = document.createElement('div');
-                div.className = "p-4 rounded-2xl bg-white/60 border border-purple-50 flex items-start gap-3";
+                div.className = "p-5 rounded-[1.5rem] bg-white/60 border border-purple-50 flex items-start gap-4 shadow-sm";
                 div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-5 h-5 rounded-lg border-purple-200 text-purple-600">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-purple-200 text-purple-600">
                     <div class="flex-1">
-                        <p class="text-xs font-bold text-slate-700">${task.name}</p>
-                        <a href="${task.url}" target="_blank" class="text-[9px] text-purple-400 font-black uppercase tracking-widest hover:underline">Learning Node</a>
+                        <p class="text-sm font-bold text-slate-700">${task.name}</p>
+                        <a href="${task.url}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-1">
+                            <i data-lucide="external-link" class="w-3 h-3"></i> Resource
+                        </a>
                     </div>
-                    <span class="text-[10px] font-black text-slate-400">+${task.xp}</span>
+                    <span class="text-[10px] font-black text-slate-400">+${task.xp}XP</span>
                 `;
                 container.appendChild(div);
             });
+            lucide.createIcons();
         }
 
         function toggleTask(index) {
             const ambition = session.ambitionVault.find(a => a.id === session.currentId);
             ambition.tasks[index].completed = !ambition.tasks[index].completed;
             save();
-            updateGlobalXP();
         }
 
         function updateGlobalXP() {
@@ -275,26 +346,36 @@
             session.ambitionVault.forEach(a => {
                 a.tasks.forEach(t => { if (t.completed) total += t.xp; });
             });
-
-            let currentRank = 'E';
-            rankThresholds.forEach(r => { if (total >= r.xp) currentRank = r.rank; });
-            const next = rankThresholds.find(r => r.xp > total) || {xp: 2100};
+            let rankIdx = 0;
+            rankThresholds.forEach((r, i) => { if (total >= r.xp) rankIdx = i; });
+            const currentRank = rankThresholds[rankIdx];
+            const next = rankThresholds[rankIdx + 1] || {xp: 2100};
 
             document.getElementById('xpText').innerText = `${total}/${next.xp}`;
             document.getElementById('xpBar').style.width = `${Math.min((total / next.xp) * 100, 100)}%`;
-            document.getElementById('rankBadge').innerText = `${currentRank} RANK`;
+            document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
         }
 
         function toggleModal(show) {
-            document.getElementById('questModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
+            document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
+            if (session.initialized) document.getElementById('statusTab').classList.toggle('hidden', show);
         }
 
         function resetSystem() {
-            if (confirm("Purge all data?")) {
-                localStorage.removeItem('gemify_session');
-                location.reload();
+            if (confirm("Reset all ambitions? You will stay on the awakening page.")) {
+                localStorage.removeItem('gemify_vault_v2');
+                session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [] };
+                createNewAmbition();
+                updateGlobalXP();
             }
         }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !session.currentId) {
+                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
+                else startEvolution();
+            }
+        });
     </script>
 </body>
 </html>
