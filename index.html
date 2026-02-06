@@ -70,8 +70,8 @@
         </div>
     </section>
 
-    <!-- MAIN APP -->
-    <main id="appPage" class="flex h-screen opacity-0 pointer-events-none portal-transition">
+    <!-- PAGE 2: MAIN APP -->
+    <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition">
         
         <!-- SIDEBAR -->
         <aside class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50 relative">
@@ -87,7 +87,6 @@
                             <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
                         </div>
                     </div>
-                    <!-- Ranks Button -->
                     <button onclick="toggleRankGuide()" class="p-2 bg-white border border-purple-100 rounded-lg hover:bg-purple-50 transition-all shadow-sm">
                         <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Ranks</span>
                     </button>
@@ -96,9 +95,7 @@
                 <!-- Rank Guide Popover -->
                 <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] border border-white">
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Rank Progression</h4>
-                    <div id="rankGuideList" class="space-y-2">
-                        <!-- Rank items injected here -->
-                    </div>
+                    <div id="rankGuideList" class="space-y-2"></div>
                 </div>
 
                 <div class="space-y-2">
@@ -216,12 +213,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             renderRankGuide();
-            const saved = localStorage.getItem('gemify_vault_v5');
+            const saved = localStorage.getItem('gemify_vault_v6');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
-                    document.getElementById('heroPage').classList.add('hidden');
-                    document.getElementById('appPage').classList.remove('opacity-0', 'pointer-events-none');
+                    // 自动进入系统
+                    const hero = document.getElementById('heroPage');
+                    const app = document.getElementById('appPage');
+                    hero.classList.add('hidden');
+                    app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                     renderVaults();
                     if (session.currentId) loadAmbition(session.currentId);
                 }
@@ -229,29 +229,39 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v5', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v6', JSON.stringify(session));
             updateGlobalXP();
         }
 
         function enterSystem() {
-            document.getElementById('heroPage').classList.add('hidden-state');
+            const hero = document.getElementById('heroPage');
+            const app = document.getElementById('appPage');
+            hero.classList.add('hidden-state');
             setTimeout(() => {
-                document.getElementById('heroPage').classList.add('hidden');
-                document.getElementById('appPage').classList.remove('opacity-0', 'pointer-events-none');
+                hero.classList.add('hidden');
+                app.classList.remove('hidden');
+                setTimeout(() => {
+                    app.classList.remove('opacity-0', 'pointer-events-none');
+                }, 50);
             }, 600);
         }
 
         function logout() {
-            document.getElementById('appPage').classList.add('opacity-0', 'pointer-events-none');
+            const hero = document.getElementById('heroPage');
+            const app = document.getElementById('appPage');
+            app.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
-                document.getElementById('appPage').classList.add('hidden');
-                document.getElementById('heroPage').classList.remove('hidden', 'hidden-state');
+                app.classList.add('hidden');
+                hero.classList.remove('hidden');
+                setTimeout(() => {
+                    hero.classList.remove('hidden-state');
+                }, 50);
             }, 600);
         }
 
         function resetSystem() {
             if (confirm("DANGER: This will permanently delete all ambitions and XP. Continue?")) {
-                localStorage.removeItem('gemify_vault_v5');
+                localStorage.removeItem('gemify_vault_v6');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition();
                 updateGlobalXP();
@@ -458,6 +468,13 @@
         function toggleModal(show) {
             document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
         }
+
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !session.currentId) {
+                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
+                else startEvolution();
+            }
+        });
     </script>
 </body>
 </html>
