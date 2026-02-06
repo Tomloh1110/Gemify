@@ -2,296 +2,360 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gemify | Multi-Quest System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemify | System Awakening</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --lilac: #F3F1FF;
+            --lilac: #E6E6FA;
             --pastel-purple: #B39DDB;
             --deep-purple: #7E57C2;
-            --glass: rgba(255, 255, 255, 0.75);
+            --glass: rgba(255, 255, 255, 0.7);
         }
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%);
+            background-color: #fdfbff;
             color: #2D3748;
-            overflow-x: hidden;
-            min-height: 100vh;
+            overflow: hidden;
         }
 
-        .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
-        .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
-        
-        /* Sidebar Collapse */
-        .sidebar-transition { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-        .sidebar-collapsed { transform: translateX(-100%); width: 0 !important; overflow: hidden; padding: 0 !important; border: none !important; }
+        /* 动态 Gemify Tree 背景 */
+        .tree-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, var(--lilac) 0%, #ffffff 100%);
+            opacity: 0.6;
+        }
 
-        .glass { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
-        
-        /* Role Selection */
-        .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
-        .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
-        .role-card.active .icon-box { background: var(--deep-purple); color: white; }
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
 
-        /* Rank Roadmap Highlight */
-        .rank-row.active { color: var(--deep-purple); font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 12px; }
+        /* Portal 传送动画 */
+        #portalOverlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+
+        .sync-text {
+            font-family: 'Fira Code', monospace;
+            letter-spacing: 0.2em;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        /* 系统日志终端样式 */
+        .terminal-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: var(--deep-purple);
+            line-height: 1.6;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .main-layout { flex-direction: column; overflow-y: auto; }
+            .sidebar { width: 100% !important; height: auto !important; }
+            .quest-log { 
+                position: fixed; bottom: 0; right: 0; left: 0; 
+                height: 70vh; transform: translateY(100%);
+                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+                z-index: 50;
+            }
+            .quest-log.active { transform: translateY(0); }
+        }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        
-        /* Quest Card Animation */
-        .quest-card { animation: slideIn 0.4s ease-out forwards; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-8 portal-transition">
-        <div class="w-full md:w-1/2 flex justify-center items-center">
-            <svg viewBox="0 0 400 500" class="w-full max-w-[300px] md:max-w-[400px] h-auto drop-shadow-2xl">
-                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" />
-                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" />
-                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" />
-                <circle cx="80" cy="200" r="6" fill="#7E57C2" />
-                <circle cx="320" cy="150" r="6" fill="#7E57C2" />
-                <circle cx="200" cy="50" r="6" fill="#7E57C2" />
-            </svg>
-        </div>
-        <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
-            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Evolution Protocol</h2>
-            <h1 class="text-5xl md:text-8xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
-            <p class="text-xl md:text-2xl font-light text-slate-500">Discover. Define. Dominate.</p>
-            <button onclick="enterSystem()" class="w-full md:w-auto px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl flex items-center justify-center gap-3">
-                ENTER THE SYSTEM <i data-lucide="zap" class="w-5 h-5"></i>
+    <div class="tree-bg"></div>
+
+    <!-- PORTAL OVERLAY -->
+    <div id="portalOverlay">
+        <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
+        <p class="sync-text text-purple-600 font-bold">SYNCING SOUL...</p>
+    </div>
+
+    <!-- STATE 0: HERO SECTION -->
+    <section id="heroSection" class="min-h-screen flex flex-col items-center justify-center text-center p-6">
+        <div class="space-y-6">
+            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Gemify Protocol</h2>
+            <h1 class="text-6xl md:text-8xl font-extrabold text-slate-900 tracking-tighter">
+                Discover.<br>Define.<br><span class="text-purple-500">Dominate.</span>
+            </h1>
+            <button onclick="enterSystem()" class="mt-8 px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:scale-105 transition-all shadow-2xl flex items-center gap-3 mx-auto">
+                ENTER THE SYSTEM <i data-lucide="zap"></i>
             </button>
         </div>
     </section>
 
-    <!-- PAGE 2: MAIN APP -->
-    <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col md:flex-row portal-transition">
+    <!-- STATE 1: APP INTERFACE -->
+    <main id="appInterface" class="hidden h-screen flex main-layout overflow-hidden">
         
-        <!-- SIDEBAR TOGGLE -->
-        <button onclick="toggleSidebar()" class="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-purple-100 hover:bg-purple-50 transition-all">
-            <i data-lucide="menu" class="w-6 h-6 text-slate-700"></i>
-        </button>
-
-        <!-- CHARACTER SIDEBAR -->
-        <aside id="sidebar" class="w-full md:w-[320px] glass border-b md:border-r border-white/50 p-6 md:p-8 pt-20 md:pt-24 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-6 z-40 sidebar-transition relative">
-            
-            <div class="flex flex-col gap-6 w-full">
-                <div class="flex items-center gap-4">
-                    <div id="sidebarIcon" class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
-                        <i data-lucide="user"></i>
-                    </div>
-                    <div>
-                        <h3 id="statName" class="font-bold text-slate-800">Player</h3>
-                        <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
-                    </div>
+        <!-- LEFT: CHARACTER SIDEBAR -->
+        <aside class="sidebar w-[300px] glass border-r border-purple-100 p-8 flex flex-col">
+            <div class="flex items-center gap-4 mb-10">
+                <div id="roleIcon" class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
+                    <i data-lucide="user"></i>
                 </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase">
-                        <span>Global XP</span>
-                        <span id="xpText">0/100</span>
-                    </div>
-                    <div class="w-full h-2 bg-white/50 rounded-full overflow-hidden">
-                        <div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
-                    </div>
+                <div>
+                    <h3 id="statName" class="font-bold text-slate-800">Player</h3>
+                    <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E RANK</span>
                 </div>
             </div>
-            
-            <div class="hidden md:block w-full pt-6 flex-1">
+
+            <div class="space-y-2 mb-10">
+                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <span>Global XP</span>
+                    <span id="xpText">0 / 100</span>
+                </div>
+                <div class="w-full h-2 bg-purple-100 rounded-full overflow-hidden">
+                    <div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto no-scrollbar">
                 <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Rank Roadmap</h4>
-                <div id="rankGuide" class="space-y-1 text-[11px]">
-                    <div class="rank-row flex justify-between p-2.5" data-rank="SS"><span>SS Rank</span><span>2100+ XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5" data-rank="S"><span>S Rank</span><span>1500 XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5" data-rank="A"><span>A Rank</span><span>1000 XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5" data-rank="B"><span>B Rank</span><span>600 XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5" data-rank="C"><span>C Rank</span><span>300 XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5" data-rank="D"><span>D Rank</span><span>100 XP</span></div>
-                    <div class="rank-row flex justify-between p-2.5 active" data-rank="E"><span>E Rank</span><span>Base</span></div>
+                <div id="rankGuide" class="space-y-1 text-xs">
+                    <!-- Rank rows will be highlighted here -->
                 </div>
             </div>
 
-            <button onclick="resetSystem()" class="w-full py-3 px-4 border border-red-100 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 transition-all flex items-center justify-center gap-2">
-                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reset System
+            <button onclick="resetSystem()" class="mt-6 w-full py-3 text-red-400 text-[10px] font-bold uppercase tracking-widest border border-red-100 rounded-xl hover:bg-red-50 transition-all">
+                Reset System
             </button>
         </aside>
 
         <!-- CENTER: INPUT FORM -->
-        <section class="flex-1 relative flex flex-col items-center justify-start md:justify-center p-4 md:p-12 overflow-y-auto no-scrollbar">
-            <div class="max-w-2xl w-full glass p-6 md:p-12 rounded-[2.5rem] shadow-2xl space-y-8 my-4">
-                <div class="text-center md:text-left">
+        <section class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto no-scrollbar">
+            <div class="max-w-xl w-full glass p-10 rounded-[2.5rem] shadow-2xl space-y-8">
+                <div class="text-center">
                     <h2 class="text-3xl font-extrabold text-slate-900">New Ambition</h2>
-                    <p class="text-slate-500">Add a new quest to your evolution path.</p>
+                    <p class="text-slate-500">Add a new quest to your evolution hub.</p>
                 </div>
-                <div class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label>
-                        <input type="text" id="inputName" placeholder="Enter name..." class="w-full min-h-[56px] px-6 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
+
+                <div class="space-y-5">
+                    <input type="text" id="inputName" placeholder="Player Name" class="w-full p-4 rounded-2xl bg-white border border-purple-100 outline-none focus:ring-2 focus:ring-purple-300 transition-all">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="setRole('Warrior')" id="btnWarrior" class="p-4 rounded-2xl border-2 border-purple-100 hover:border-purple-400 transition-all flex flex-col items-center gap-2">
+                            <i data-lucide="sword"></i> <span class="text-xs font-bold uppercase">Warrior</span>
+                        </button>
+                        <button onclick="setRole('Mage')" id="btnMage" class="p-4 rounded-2xl border-2 border-purple-100 hover:border-purple-400 transition-all flex flex-col items-center gap-2">
+                            <i data-lucide="wand-2"></i> <span class="text-xs font-bold uppercase">Mage</span>
+                        </button>
                     </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div onclick="selectRole('male')" id="role-male" class="role-card active p-6 rounded-3xl glass flex flex-col items-center gap-3">
-                                <div class="icon-box w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center transition-colors"><i data-lucide="sword"></i></div>
-                                <span class="text-xs font-bold uppercase tracking-widest">Warrior</span>
-                            </div>
-                            <div onclick="selectRole('female')" id="role-female" class="role-card p-6 rounded-3xl glass flex flex-col items-center gap-3">
-                                <div class="icon-box w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center transition-colors"><i data-lucide="wand-2"></i></div>
-                                <span class="text-xs font-bold uppercase tracking-widest">Mage</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
-                        <input type="text" id="inputAmbition" placeholder="e.g. Master UI Design" class="w-full min-h-[56px] px-6 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400 transition-all">
-                    </div>
-                    <button onclick="addNewAmbition()" class="w-full min-h-[60px] bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
+
+                    <input type="text" id="inputAmbition" placeholder="Core Ambition (e.g. Master UI Design)" class="w-full p-4 rounded-2xl bg-white border border-purple-100 outline-none focus:ring-2 focus:ring-purple-300 transition-all">
+                    
+                    <button onclick="initializeEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">
+                        INITIALIZE EVOLUTION
+                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- RIGHT: QUEST LOG (Multi-Quest) -->
-        <aside id="questLog" class="w-full md:w-[400px] glass border-l border-white/50 p-6 overflow-y-auto no-scrollbar z-30">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="font-black text-slate-800 uppercase text-sm tracking-tighter">Quest Log</h3>
-                <span id="questCount" class="bg-purple-100 text-purple-600 text-[10px] font-bold px-2 py-1 rounded-full">0 Active</span>
+        <!-- RIGHT: QUEST LOG (HUB) -->
+        <aside id="questLog" class="quest-log w-[35%] glass border-l border-purple-100 flex flex-col">
+            <div class="p-6 border-b border-purple-50 flex justify-between items-center">
+                <h3 class="font-black text-slate-800 uppercase text-sm tracking-tighter">Quest Hub</h3>
+                <button onclick="toggleMobileLog()" class="md:hidden p-2"><i data-lucide="chevron-down"></i></button>
             </div>
-            <div id="questContainer" class="space-y-6">
-                <!-- Quest Cards injected here -->
+
+            <!-- System Log Terminal (Hidden by default) -->
+            <div id="terminal" class="hidden m-4 p-4 rounded-2xl bg-purple-50/50 border border-purple-100 h-40 overflow-y-auto no-scrollbar">
+                <div id="terminalContent" class="terminal-text"></div>
+            </div>
+
+            <!-- Ambition Vault -->
+            <div id="vaultContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
+                <!-- Quest Cards will append here -->
             </div>
         </aside>
+
+        <!-- Mobile Toggle -->
+        <button onclick="toggleMobileLog()" class="md:hidden fixed bottom-6 right-6 z-40 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center">
+            <i data-lucide="layout-list"></i>
+        </button>
     </main>
 
     <script>
-        // --- GLOBAL STATE ---
+        // --- CONFIGURATION & STATE ---
         let state = {
-            initialized: false,
-            sidebarCollapsed: false,
-            playerName: '',
-            playerRole: 'male',
-            ambitions: [] // Array of {id, title, tasks: []}
+            player: { name: '', role: 'Warrior' },
+            totalXP: 0,
+            ambition_vault: []
         };
 
-        const rankThresholds = [
-            { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 },
-            { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }
+        const RANKS = [
+            { name: 'E', min: 0, max: 99 },
+            { name: 'D', min: 100, max: 299 },
+            { name: 'C', min: 300, max: 599 },
+            { name: 'B', min: 600, max: 999 },
+            { name: 'A', min: 1000, max: 1499 },
+            { name: 'S', min: 1500, max: 2099 },
+            { name: 'SS', min: 2100, max: 100000 }
         ];
 
-        // --- PERSISTENCE ---
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const saved = localStorage.getItem('GemifyVault');
-            if (saved) {
-                state = JSON.parse(saved);
-                if (state.initialized) restoreVault();
-            }
+            loadSession();
+            renderRankGuide();
         });
 
-        function saveVault() {
-            localStorage.setItem('GemifyVault', JSON.stringify(state));
+        function loadSession() {
+            const saved = localStorage.getItem('gemify_session');
+            if (saved) {
+                state = JSON.parse(saved);
+                document.getElementById('heroSection').style.display = 'none';
+                document.getElementById('appInterface').classList.remove('hidden');
+                syncUI();
+                renderVault();
+            }
         }
 
-        function restoreVault() {
-            document.getElementById('heroPage').classList.add('hidden');
-            const app = document.getElementById('awakeningPage');
-            app.classList.remove('hidden', 'opacity-0');
-            
-            document.getElementById('statName').innerText = state.playerName;
-            document.getElementById('inputName').value = state.playerName;
-            updateSidebarIcon(state.playerRole);
-            applySidebarState();
-            renderQuestLog();
-            updateGlobalXP();
+        function saveSession() {
+            localStorage.setItem('gemify_session', JSON.stringify(state));
         }
 
-        // --- CORE LOGIC ---
-        function enterSystem() {
-            document.getElementById('heroPage').classList.add('hidden-state');
+        // --- CORE ACTIONS ---
+        async function enterSystem() {
+            const portal = document.getElementById('portalOverlay');
+            portal.style.display = 'flex';
+            await new Promise(r => setTimeout(r, 1500));
+            portal.style.opacity = '0';
             setTimeout(() => {
-                document.getElementById('heroPage').classList.add('hidden');
-                const app = document.getElementById('awakeningPage');
-                app.classList.remove('hidden');
-                setTimeout(() => app.classList.remove('opacity-0'), 50);
-            }, 600);
+                portal.style.display = 'none';
+                document.getElementById('heroSection').style.display = 'none';
+                document.getElementById('appInterface').classList.remove('hidden');
+            }, 500);
         }
 
-        function selectRole(role) {
-            state.playerRole = role;
-            document.getElementById('role-male').classList.toggle('active', role === 'male');
-            document.getElementById('role-female').classList.toggle('active', role === 'female');
+        function setRole(role) {
+            state.player.role = role;
+            document.getElementById('btnWarrior').style.borderColor = role === 'Warrior' ? '#7E57C2' : '#E6E6FA';
+            document.getElementById('btnMage').style.borderColor = role === 'Mage' ? '#7E57C2' : '#E6E6FA';
         }
 
-        function toggleSidebar() {
-            state.sidebarCollapsed = !state.sidebarCollapsed;
-            applySidebarState();
-            saveVault();
-        }
-
-        function applySidebarState() {
-            const sidebar = document.getElementById('sidebar');
-            if (state.sidebarCollapsed) sidebar.classList.add('sidebar-collapsed');
-            else sidebar.classList.remove('sidebar-collapsed');
-        }
-
-        function addNewAmbition() {
+        async function initializeEvolution() {
             const name = document.getElementById('inputName').value.trim();
-            const title = document.getElementById('inputAmbition').value.trim();
+            const ambition = document.getElementById('inputAmbition').value.trim();
+            if (!name || !ambition) return alert("State your name and ambition.");
 
-            if (!name || !title) return alert("Please enter both Name and Ambition.");
-
-            state.playerName = name;
-            state.initialized = true;
+            state.player.name = name;
             
-            const newAmbition = {
+            // 1. Show Terminal
+            const terminal = document.getElementById('terminal');
+            const content = document.getElementById('terminalContent');
+            terminal.classList.remove('hidden');
+            content.innerHTML = '';
+            
+            const logs = [
+                `[System: Analyzing Ambition: ${ambition}...]`,
+                `[Orchestrator: Calculating XP Nodes...]`,
+                `[Gemini: Mapping Evolution Path for ${state.player.role}...]`,
+                `[System: Awakening Sequence Complete.]`
+            ];
+
+            for (const log of logs) {
+                content.innerHTML += `<p>> ${log}</p>`;
+                await new Promise(r => setTimeout(r, 600));
+            }
+
+            // 2. Generate Quest Card
+            const newQuest = {
                 id: Date.now(),
-                title: title,
-                tasks: [
-                    { id: 1, t: `Research ${title} fundamentals`, xp: 25, completed: false },
-                    { id: 2, t: "Establish daily focus block", xp: 15, completed: false },
-                    { id: 3, t: "Identify 3 core tools", xp: 10, completed: false }
-                ]
+                title: ambition,
+                tasks: generateTasks(ambition)
             };
 
-            state.ambitions.unshift(newAmbition); // Add to top
-            document.getElementById('statName').innerText = name;
-            document.getElementById('inputAmbition').value = ''; // Clear only ambition
+            state.ambition_vault.unshift(newQuest);
+            terminal.classList.add('hidden');
+            document.getElementById('inputAmbition').value = '';
             
-            updateSidebarIcon(state.playerRole);
-            renderQuestLog();
-            updateGlobalXP();
-            saveVault();
+            syncUI();
+            renderVault();
+            saveSession();
         }
 
-        function renderQuestLog() {
-            const container = document.getElementById('questContainer');
-            document.getElementById('questCount').innerText = `${state.ambitions.length} Active`;
+        function generateTasks(ambition) {
+            const isWarrior = state.player.role === 'Warrior';
+            const verbs = isWarrior ? ["Strike", "Execute", "Command", "Conquer"] : ["Analyze", "Meditate", "Synergize", "Decipher"];
+            
+            return [
+                { name: `${verbs[0]} the core principles of ${ambition}`, xp: 15, completed: false, url: `https://www.youtube.com/results?search_query=${ambition}+basics` },
+                { name: `${verbs[1]} a 1-hour deep focus session`, xp: 25, completed: false, url: `https://www.youtube.com/results?search_query=deep+work+tips` },
+                { name: `${verbs[2]} 3 primary tools for mastery`, xp: 20, completed: false, url: `https://www.youtube.com/results?search_query=${ambition}+tools` }
+            ];
+        }
+
+        // --- UI RENDERING ---
+        function syncUI() {
+            document.getElementById('statName').innerText = state.player.name;
+            const icon = state.player.role === 'Warrior' ? 'sword' : 'wand-2';
+            document.getElementById('roleIcon').innerHTML = `<i data-lucide="${icon}"></i>`;
+            
+            // Calculate Global XP
+            let total = 0;
+            state.ambition_vault.forEach(q => {
+                q.tasks.forEach(t => { if (t.completed) total += t.xp; });
+            });
+            state.totalXP = total;
+
+            // Update Rank
+            const currentRank = RANKS.find(r => total >= r.min && total <= r.max) || RANKS[0];
+            document.getElementById('rankBadge').innerText = `${currentRank.name} RANK`;
+            document.getElementById('xpText').innerText = `${total} / ${currentRank.max + 1}`;
+            
+            const progress = (total / (currentRank.max + 1)) * 100;
+            document.getElementById('xpBar').style.width = `${Math.min(progress, 100)}%`;
+
+            // Highlight Roadmap
+            renderRankGuide(currentRank.name);
+            lucide.createIcons();
+        }
+
+        function renderVault() {
+            const container = document.getElementById('vaultContainer');
             container.innerHTML = '';
 
-            state.ambitions.forEach(ambition => {
+            state.ambition_vault.forEach(quest => {
                 const card = document.createElement('div');
-                card.className = "quest-card glass p-5 rounded-3xl border border-purple-100 space-y-4";
+                card.className = "glass p-6 rounded-[2rem] border border-purple-100 space-y-4 shadow-sm";
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <h4 class="font-black text-slate-800 text-xs uppercase tracking-widest">${ambition.title}</h4>
-                        <button onclick="removeAmbition(${ambition.id})" class="text-slate-300 hover:text-red-400 transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                        <h4 class="font-black text-slate-800 text-xs uppercase tracking-widest">${quest.title}</h4>
+                        <button onclick="deleteQuest(${quest.id})" class="text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                     <div class="space-y-3">
-                        ${ambition.tasks.map(task => `
+                        ${quest.tasks.map((task, idx) => `
                             <div class="flex items-start gap-3 p-3 rounded-xl bg-white/50 border border-purple-50">
-                                <input type="checkbox" class="mt-1 w-5 h-5 rounded-lg border-purple-200 text-purple-600" 
-                                    ${task.completed ? 'checked' : ''} 
-                                    onchange="toggleTask(${ambition.id}, ${task.id})">
+                                <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                                    onchange="toggleTask(${quest.id}, ${idx})"
+                                    class="mt-1 w-5 h-5 rounded-lg border-purple-200 text-purple-600 focus:ring-purple-500">
                                 <div class="flex-1">
-                                    <p class="text-[11px] font-bold text-slate-700">${task.t}</p>
-                                    <span class="text-[9px] font-black text-purple-400">+${task.xp} XP</span>
+                                    <p class="text-[11px] font-bold text-slate-700 leading-tight">${task.name}</p>
+                                    <div class="flex justify-between items-center mt-1">
+                                        <a href="${task.url}" target="_blank" class="text-[9px] text-purple-500 font-bold hover:underline">LEARN NODE</a>
+                                        <span class="text-[9px] font-black text-slate-400">+${task.xp} XP</span>
+                                    </div>
                                 </div>
                             </div>
                         `).join('')}
@@ -302,61 +366,42 @@
             lucide.createIcons();
         }
 
-        function toggleTask(ambitionId, taskId) {
-            const ambition = state.ambitions.find(a => a.id === ambitionId);
-            const task = ambition.tasks.find(t => t.id === taskId);
-            task.completed = !task.completed;
-            
-            updateGlobalXP();
-            saveVault();
+        function renderRankGuide(activeRank = 'E') {
+            const guide = document.getElementById('rankGuide');
+            guide.innerHTML = RANKS.slice().reverse().map(r => `
+                <div class="flex justify-between p-2 rounded-lg ${r.name === activeRank ? 'bg-purple-600 text-white font-bold' : 'text-slate-400'}">
+                    <span>${r.name} Rank</span>
+                    <span>${r.min} XP</span>
+                </div>
+            `).join('');
         }
 
-        function removeAmbition(id) {
-            if (confirm("Delete this quest?")) {
-                state.ambitions = state.ambitions.filter(a => a.id !== id);
-                renderQuestLog();
-                updateGlobalXP();
-                saveVault();
+        // --- INTERACTION ---
+        function toggleTask(questId, taskIdx) {
+            const quest = state.ambition_vault.find(q => q.id === questId);
+            quest.tasks[taskIdx].completed = !quest.tasks[taskIdx].completed;
+            syncUI();
+            saveSession();
+        }
+
+        function deleteQuest(id) {
+            if (confirm("Delete this quest node?")) {
+                state.ambition_vault = state.ambition_vault.filter(q => q.id !== id);
+                syncUI();
+                renderVault();
+                saveSession();
             }
-        }
-
-        function updateGlobalXP() {
-            let total = 0;
-            state.ambitions.forEach(a => {
-                a.tasks.forEach(t => {
-                    if (t.completed) total += t.xp;
-                });
-            });
-
-            // Find Rank
-            let currentRank = 'E';
-            rankThresholds.forEach(r => { if (total >= r.xp) currentRank = r.rank; });
-            
-            const nextRankObj = rankThresholds.find(r => r.xp > total) || {xp: 2100};
-            const progress = (total / nextRankObj.xp) * 100;
-
-            // Update UI
-            document.getElementById('xpText').innerText = `${total}/${nextRankObj.xp}`;
-            document.getElementById('xpBar').style.width = `${Math.min(progress, 100)}%`;
-            document.getElementById('rankBadge').innerText = `${currentRank} Rank`;
-            
-            document.querySelectorAll('.rank-row').forEach(row => {
-                row.classList.toggle('active', row.dataset.rank === currentRank);
-            });
-        }
-
-        function updateSidebarIcon(role) {
-            const icon = role === 'male' ? 'sword' : 'wand-2';
-            document.getElementById('sidebarIcon').innerHTML = `<i data-lucide="${icon}"></i>`;
-            lucide.createIcons();
         }
 
         function resetSystem() {
-            if (confirm("Reset Vault? All quests will be deleted.")) {
-                localStorage.removeItem('GemifyVault');
-                state = { initialized: false, sidebarCollapsed: false, playerName: '', playerRole: 'male', ambitions: [] };
+            if (confirm("Purge all system data?")) {
+                localStorage.removeItem('gemify_session');
                 location.reload();
             }
+        }
+
+        function toggleMobileLog() {
+            document.getElementById('questLog').classList.toggle('active');
         }
     </script>
 </body>
