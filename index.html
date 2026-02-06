@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemify | System Awakening</title>
+    <title>Gemify | Multi-Quest System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -19,389 +19,356 @@
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #fdfbff;
             color: #2D3748;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* 动态 Gemify Tree 背景 */
-        .tree-bg {
+        /* Utopian Futurism Background */
+        .gemify-bg {
             position: fixed;
             inset: 0;
             z-index: -1;
-            background: radial-gradient(circle at 50% 50%, var(--lilac) 0%, #ffffff 100%);
-            opacity: 0.6;
+            background: radial-gradient(circle at 20% 30%, var(--lilac) 0%, transparent 40%),
+                        radial-gradient(circle at 80% 70%, #f3f0ff 0%, transparent 40%);
+            background-color: #ffffff;
         }
 
         .glass {
             background: var(--glass);
-            backdrop-filter: blur(16px);
+            backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.4);
         }
 
-        /* Portal 传送动画 */
-        #portalOverlay {
-            position: fixed;
-            inset: 0;
-            background: white;
-            z-index: 100;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 0.5s;
+        /* Transitions */
+        .portal-transition {
+            transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
         }
 
-        .sync-text {
-            font-family: 'Fira Code', monospace;
-            letter-spacing: 0.2em;
-            animation: pulse 1.5s infinite;
+        .quest-card {
+            animation: slideIn 0.4s ease-out forwards;
         }
 
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-        /* 系统日志终端样式 */
-        .terminal-text {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.75rem;
-            color: var(--deep-purple);
-            line-height: 1.6;
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 响应式适配 */
+        /* Mobile Drawer Logic */
         @media (max-width: 768px) {
-            .main-layout { flex-direction: column; overflow-y: auto; }
-            .sidebar { width: 100% !important; height: auto !important; }
-            .quest-log { 
-                position: fixed; bottom: 0; right: 0; left: 0; 
-                height: 70vh; transform: translateY(100%);
-                transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            #quest-log {
+                position: fixed;
+                right: 0;
+                top: 0;
+                height: 100%;
+                width: 100%;
                 z-index: 50;
+                transform: translateX(100%);
+                transition: transform 0.5s ease;
             }
-            .quest-log.active { transform: translateY(0); }
+            #quest-log.active { transform: translateX(0); }
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .rank-row.active {
+            background: var(--lilac);
+            color: var(--deep-purple);
+            font-weight: 800;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="tree-bg"></div>
-
-    <!-- PORTAL OVERLAY -->
-    <div id="portalOverlay">
-        <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4"></div>
-        <p class="sync-text text-purple-600 font-bold">SYNCING SOUL...</p>
-    </div>
+    <div class="gemify-bg"></div>
 
     <!-- STATE 0: HERO SECTION -->
-    <section id="heroSection" class="min-h-screen flex flex-col items-center justify-center text-center p-6">
-        <div class="space-y-6">
-            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Gemify Protocol</h2>
-            <h1 class="text-6xl md:text-8xl font-extrabold text-slate-900 tracking-tighter">
-                Discover.<br>Define.<br><span class="text-purple-500">Dominate.</span>
+    <section id="hero-section" class="fixed inset-0 flex flex-col items-center justify-center z-50 bg-white/90 backdrop-blur-md portal-transition">
+        <div class="text-center space-y-6 px-6">
+            <div class="flex justify-center mb-4">
+                <div class="p-4 rounded-3xl bg-white shadow-2xl shadow-purple-200">
+                    <i data-lucide="gem" class="w-12 h-12 text-purple-500"></i>
+                </div>
+            </div>
+            <h1 class="text-6xl md:text-8xl font-extrabold tracking-tighter text-slate-900">
+                Discover.<br>Define.<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">Dominate.</span>
             </h1>
-            <button onclick="enterSystem()" class="mt-8 px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:scale-105 transition-all shadow-2xl flex items-center gap-3 mx-auto">
-                ENTER THE SYSTEM <i data-lucide="zap"></i>
+            <p class="text-slate-500 text-lg font-light tracking-widest uppercase">Gemify Evolution Protocol</p>
+            <button onclick="enterSystem()" class="mt-8 px-10 py-5 bg-slate-900 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-2xl flex items-center gap-3 mx-auto">
+                ENTER THE SYSTEM
+                <i data-lucide="zap" class="w-5 h-5"></i>
             </button>
         </div>
     </section>
 
     <!-- STATE 1: APP INTERFACE -->
-    <main id="appInterface" class="hidden h-screen flex main-layout overflow-hidden">
+    <main id="app-interface" class="hidden opacity-0 flex flex-col md:flex-row h-screen overflow-hidden portal-transition">
         
         <!-- LEFT: CHARACTER SIDEBAR -->
-        <aside class="sidebar w-[300px] glass border-r border-purple-100 p-8 flex flex-col">
+        <aside class="w-full md:w-[320px] glass border-r border-purple-100 p-8 flex flex-col z-20">
             <div class="flex items-center gap-4 mb-10">
-                <div id="roleIcon" class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
+                <div id="role-icon" class="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
                     <i data-lucide="user"></i>
                 </div>
                 <div>
-                    <h3 id="statName" class="font-bold text-slate-800">Player</h3>
-                    <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E RANK</span>
+                    <h2 id="display-name" class="font-bold text-slate-800 text-lg">Player</h2>
+                    <span id="rank-badge" class="text-[10px] font-black px-2 py-0.5 bg-purple-600 text-white rounded uppercase">E Rank</span>
                 </div>
             </div>
 
-            <div class="space-y-2 mb-10">
+            <div class="space-y-3 mb-10">
                 <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <span>Global XP</span>
-                    <span id="xpText">0 / 100</span>
+                    <span>Global XP Progress</span>
+                    <span id="xp-text">0 / 100</span>
                 </div>
-                <div class="w-full h-2 bg-purple-100 rounded-full overflow-hidden">
-                    <div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div>
-                </div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto no-scrollbar">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Rank Roadmap</h4>
-                <div id="rankGuide" class="space-y-1 text-xs">
-                    <!-- Rank rows will be highlighted here -->
+                <div class="w-full h-2 bg-purple-100/50 rounded-full overflow-hidden">
+                    <div id="xp-bar" class="h-full bg-gradient-to-r from-purple-400 to-indigo-600 transition-all duration-700" style="width: 0%"></div>
                 </div>
             </div>
 
-            <button onclick="resetSystem()" class="mt-6 w-full py-3 text-red-400 text-[10px] font-bold uppercase tracking-widest border border-red-100 rounded-xl hover:bg-red-50 transition-all">
+            <div class="flex-1 overflow-y-auto pr-2">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Rank Roadmap</h3>
+                <div id="rank-guide" class="space-y-1 text-xs">
+                    <div class="rank-row flex justify-between p-2" data-rank="SS"><span>SS Rank</span><span>2100+ XP</span></div>
+                    <div class="rank-row flex justify-between p-2" data-rank="S"><span>S Rank</span><span>1500 XP</span></div>
+                    <div class="rank-row flex justify-between p-2" data-rank="A"><span>A Rank</span><span>1000 XP</span></div>
+                    <div class="rank-row flex justify-between p-2" data-rank="B"><span>B Rank</span><span>600 XP</span></div>
+                    <div class="rank-row flex justify-between p-2" data-rank="C"><span>C Rank</span><span>300 XP</span></div>
+                    <div class="rank-row flex justify-between p-2" data-rank="D"><span>D Rank</span><span>100 XP</span></div>
+                    <div class="rank-row flex justify-between p-2 active" data-rank="E"><span>E Rank</span><span>Base</span></div>
+                </div>
+            </div>
+
+            <button onclick="resetSystem()" class="mt-6 w-full py-3 border border-red-100 text-red-400 text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-red-50 transition-all">
                 Reset System
             </button>
         </aside>
 
         <!-- CENTER: INPUT FORM -->
-        <section class="flex-1 flex flex-col items-center justify-center p-8 overflow-y-auto no-scrollbar">
-            <div class="max-w-xl w-full glass p-10 rounded-[2.5rem] shadow-2xl space-y-8">
-                <div class="text-center">
-                    <h2 class="text-3xl font-extrabold text-slate-900">New Ambition</h2>
-                    <p class="text-slate-500">Add a new quest to your evolution hub.</p>
+        <section class="flex-1 flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto">
+            <div class="max-w-xl w-full glass p-8 md:p-12 rounded-[3rem] shadow-2xl space-y-8">
+                <div class="text-center md:text-left">
+                    <h2 class="text-4xl font-black text-slate-900">New Ambition</h2>
+                    <p class="text-slate-500">Add a new quest to your evolution vault.</p>
                 </div>
 
                 <div class="space-y-5">
-                    <input type="text" id="inputName" placeholder="Player Name" class="w-full p-4 rounded-2xl bg-white border border-purple-100 outline-none focus:ring-2 focus:ring-purple-300 transition-all">
-                    
-                    <div class="grid grid-cols-2 gap-4">
-                        <button onclick="setRole('Warrior')" id="btnWarrior" class="p-4 rounded-2xl border-2 border-purple-100 hover:border-purple-400 transition-all flex flex-col items-center gap-2">
-                            <i data-lucide="sword"></i> <span class="text-xs font-bold uppercase">Warrior</span>
-                        </button>
-                        <button onclick="setRole('Mage')" id="btnMage" class="p-4 rounded-2xl border-2 border-purple-100 hover:border-purple-400 transition-all flex flex-col items-center gap-2">
-                            <i data-lucide="wand-2"></i> <span class="text-xs font-bold uppercase">Mage</span>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Player Name</label>
+                            <input type="text" id="input-name" placeholder="Name" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 focus:ring-2 focus:ring-purple-300 outline-none transition-all">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Role Class</label>
+                            <select id="input-role" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none">
+                                <option value="Warrior">Warrior (Combatant)</option>
+                                <option value="Mage">Mage (Architect)</option>
+                            </select>
+                        </div>
                     </div>
-
-                    <input type="text" id="inputAmbition" placeholder="Core Ambition (e.g. Master UI Design)" class="w-full p-4 rounded-2xl bg-white border border-purple-100 outline-none focus:ring-2 focus:ring-purple-300 transition-all">
-                    
-                    <button onclick="initializeEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black text-slate-400 uppercase ml-2">Core Ambition</label>
+                        <input type="text" id="input-ambition" placeholder="e.g. Master of Neural Networks" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 focus:ring-2 focus:ring-purple-300 outline-none transition-all">
+                    </div>
+                    <button onclick="initializeEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-2xl hover:bg-purple-600 transition-all flex items-center justify-center gap-3">
                         INITIALIZE EVOLUTION
+                        <i data-lucide="plus" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- RIGHT: QUEST LOG (HUB) -->
-        <aside id="questLog" class="quest-log w-[35%] glass border-l border-purple-100 flex flex-col">
-            <div class="p-6 border-b border-purple-50 flex justify-between items-center">
-                <h3 class="font-black text-slate-800 uppercase text-sm tracking-tighter">Quest Hub</h3>
-                <button onclick="toggleMobileLog()" class="md:hidden p-2"><i data-lucide="chevron-down"></i></button>
+        <!-- RIGHT: QUEST LOG (MULTI-QUEST HUB) -->
+        <aside id="quest-log" class="w-full md:w-[400px] glass border-l border-purple-100 p-6 overflow-y-auto flex flex-col">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Ambition Vault</h3>
+                <button onclick="toggleMobileLog()" class="md:hidden p-2 bg-slate-100 rounded-lg"><i data-lucide="x"></i></button>
             </div>
-
-            <!-- System Log Terminal (Hidden by default) -->
-            <div id="terminal" class="hidden m-4 p-4 rounded-2xl bg-purple-50/50 border border-purple-100 h-40 overflow-y-auto no-scrollbar">
-                <div id="terminalContent" class="terminal-text"></div>
-            </div>
-
-            <!-- Ambition Vault -->
-            <div id="vaultContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-                <!-- Quest Cards will append here -->
+            <div id="vault-container" class="space-y-6">
+                <!-- Quest Cards Injected Here -->
             </div>
         </aside>
 
         <!-- Mobile Toggle -->
-        <button onclick="toggleMobileLog()" class="md:hidden fixed bottom-6 right-6 z-40 w-14 h-14 bg-slate-900 text-white rounded-full shadow-2xl flex items-center justify-center">
+        <button onclick="toggleMobileLog()" class="md:hidden fixed bottom-6 right-6 z-40 p-4 bg-purple-600 text-white rounded-full shadow-2xl">
             <i data-lucide="layout-list"></i>
         </button>
     </main>
 
     <script>
-        // --- CONFIGURATION & STATE ---
+        // --- DATA ARCHITECTURE ---
         let state = {
-            player: { name: '', role: 'Warrior' },
-            totalXP: 0,
-            ambition_vault: []
+            playerName: "",
+            playerRole: "Warrior",
+            totalXp: 0,
+            ambitionVault: [] // Array of {id, title, role, tasks: []}
         };
 
-        const RANKS = [
-            { name: 'E', min: 0, max: 99 },
-            { name: 'D', min: 100, max: 299 },
-            { name: 'C', min: 300, max: 599 },
-            { name: 'B', min: 600, max: 999 },
-            { name: 'A', min: 1000, max: 1499 },
-            { name: 'S', min: 1500, max: 2099 },
-            { name: 'SS', min: 2100, max: 100000 }
+        const STORAGE_KEY = "gemify_session";
+
+        const rankThresholds = [
+            { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 },
+            { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }
         ];
 
-        // --- INITIALIZATION ---
+        // --- CORE LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             loadSession();
-            renderRankGuide();
         });
 
+        function saveSession() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
         function loadSession() {
-            const saved = localStorage.getItem('gemify_session');
+            const saved = localStorage.getItem(STORAGE_KEY);
             if (saved) {
                 state = JSON.parse(saved);
-                document.getElementById('heroSection').style.display = 'none';
-                document.getElementById('appInterface').classList.remove('hidden');
-                syncUI();
-                renderVault();
+                if (state.playerName) {
+                    renderApp();
+                    skipHero();
+                }
             }
         }
 
-        function saveSession() {
-            localStorage.setItem('gemify_session', JSON.stringify(state));
+        function skipHero() {
+            document.getElementById('hero-section').classList.add('hidden');
+            const app = document.getElementById('app-interface');
+            app.classList.remove('hidden');
+            setTimeout(() => app.classList.remove('opacity-0'), 50);
         }
 
-        // --- CORE ACTIONS ---
-        async function enterSystem() {
-            const portal = document.getElementById('portalOverlay');
-            portal.style.display = 'flex';
-            await new Promise(r => setTimeout(r, 1500));
-            portal.style.opacity = '0';
-            setTimeout(() => {
-                portal.style.display = 'none';
-                document.getElementById('heroSection').style.display = 'none';
-                document.getElementById('appInterface').classList.remove('hidden');
-            }, 500);
+        function enterSystem() {
+            document.getElementById('hero-section').classList.add('opacity-0', 'scale-110');
+            setTimeout(skipHero, 800);
         }
 
-        function setRole(role) {
-            state.player.role = role;
-            document.getElementById('btnWarrior').style.borderColor = role === 'Warrior' ? '#7E57C2' : '#E6E6FA';
-            document.getElementById('btnMage').style.borderColor = role === 'Mage' ? '#7E57C2' : '#E6E6FA';
-        }
+        function initializeEvolution() {
+            const name = document.getElementById('input-name').value.trim();
+            const role = document.getElementById('input-role').value;
+            const ambition = document.getElementById('input-ambition').value.trim();
 
-        async function initializeEvolution() {
-            const name = document.getElementById('inputName').value.trim();
-            const ambition = document.getElementById('inputAmbition').value.trim();
-            if (!name || !ambition) return alert("State your name and ambition.");
+            if (!name || !ambition) return alert("Please state your name and ambition.");
 
-            state.player.name = name;
-            
-            // 1. Show Terminal
-            const terminal = document.getElementById('terminal');
-            const content = document.getElementById('terminalContent');
-            terminal.classList.remove('hidden');
-            content.innerHTML = '';
-            
-            const logs = [
-                `[System: Analyzing Ambition: ${ambition}...]`,
-                `[Orchestrator: Calculating XP Nodes...]`,
-                `[Gemini: Mapping Evolution Path for ${state.player.role}...]`,
-                `[System: Awakening Sequence Complete.]`
-            ];
+            state.playerName = name;
+            state.playerRole = role;
 
-            for (const log of logs) {
-                content.innerHTML += `<p>> ${log}</p>`;
-                await new Promise(r => setTimeout(r, 600));
-            }
-
-            // 2. Generate Quest Card
             const newQuest = {
                 id: Date.now(),
                 title: ambition,
-                tasks: generateTasks(ambition)
+                role: role,
+                tasks: generateTasks(ambition, role)
             };
 
-            state.ambition_vault.unshift(newQuest);
-            terminal.classList.add('hidden');
-            document.getElementById('inputAmbition').value = '';
+            state.ambitionVault.unshift(newQuest); // Add to top
+            document.getElementById('input-ambition').value = ""; // Clear only ambition
             
-            syncUI();
-            renderVault();
+            renderApp();
             saveSession();
         }
 
-        function generateTasks(ambition) {
-            const isWarrior = state.player.role === 'Warrior';
-            const verbs = isWarrior ? ["Strike", "Execute", "Command", "Conquer"] : ["Analyze", "Meditate", "Synergize", "Decipher"];
-            
+        function generateTasks(title, role) {
+            const warriorTones = ["Strike", "Execute", "Command", "Conquer"];
+            const mageTones = ["Analyze", "Meditate", "Synergize", "Decipher"];
+            const tones = role === "Warrior" ? warriorTones : mageTones;
+
             return [
-                { name: `${verbs[0]} the core principles of ${ambition}`, xp: 15, completed: false, url: `https://www.youtube.com/results?search_query=${ambition}+basics` },
-                { name: `${verbs[1]} a 1-hour deep focus session`, xp: 25, completed: false, url: `https://www.youtube.com/results?search_query=deep+work+tips` },
-                { name: `${verbs[2]} 3 primary tools for mastery`, xp: 20, completed: false, url: `https://www.youtube.com/results?search_query=${ambition}+tools` }
+                { id: 1, name: `${tones[0]} the core principles of ${title}`, xp: 25, completed: false },
+                { id: 2, name: `${tones[1]} a 1-hour deep focus session`, xp: 15, completed: false },
+                { id: 3, name: `${tones[2]} 3 essential tools for mastery`, xp: 10, completed: false },
+                { id: 4, name: `${tones[3]} a prototype project`, xp: 50, completed: false }
             ];
         }
 
-        // --- UI RENDERING ---
-        function syncUI() {
-            document.getElementById('statName').innerText = state.player.name;
-            const icon = state.player.role === 'Warrior' ? 'sword' : 'wand-2';
-            document.getElementById('roleIcon').innerHTML = `<i data-lucide="${icon}"></i>`;
+        function toggleTask(questId, taskId) {
+            const quest = state.ambitionVault.find(q => q.id === questId);
+            const task = quest.tasks.find(t => t.id === taskId);
+            task.completed = !task.completed;
             
-            // Calculate Global XP
-            let total = 0;
-            state.ambition_vault.forEach(q => {
-                q.tasks.forEach(t => { if (t.completed) total += t.xp; });
-            });
-            state.totalXP = total;
-
-            // Update Rank
-            const currentRank = RANKS.find(r => total >= r.min && total <= r.max) || RANKS[0];
-            document.getElementById('rankBadge').innerText = `${currentRank.name} RANK`;
-            document.getElementById('xpText').innerText = `${total} / ${currentRank.max + 1}`;
-            
-            const progress = (total / (currentRank.max + 1)) * 100;
-            document.getElementById('xpBar').style.width = `${Math.min(progress, 100)}%`;
-
-            // Highlight Roadmap
-            renderRankGuide(currentRank.name);
-            lucide.createIcons();
+            calculateGlobalXP();
+            renderApp();
+            saveSession();
         }
 
-        function renderVault() {
-            const container = document.getElementById('vaultContainer');
-            container.innerHTML = '';
+        function calculateGlobalXP() {
+            state.totalXp = state.ambitionVault.reduce((acc, quest) => {
+                return acc + quest.tasks.filter(t => t.completed).reduce((sum, t) => sum + t.xp, 0);
+            }, 0);
+        }
 
-            state.ambition_vault.forEach(quest => {
+        function renderApp() {
+            // Sidebar
+            document.getElementById('display-name').innerText = state.playerName;
+            document.getElementById('input-name').value = state.playerName;
+            
+            const roleIcon = document.getElementById('role-icon');
+            roleIcon.innerHTML = state.playerRole === "Warrior" ? '<i data-lucide="sword"></i>' : '<i data-lucide="wand-2"></i>';
+            
+            // XP & Rank
+            let currentRank = 'E';
+            rankThresholds.forEach(r => { if (state.totalXp >= r.xp) currentRank = r.rank; });
+            
+            const nextRankObj = rankThresholds.find(r => r.xp > state.totalXp) || {xp: 2100};
+            const progress = (state.totalXp / nextRankObj.xp) * 100;
+
+            document.getElementById('xp-text').innerText = `${state.totalXp} / ${nextRankObj.xp}`;
+            document.getElementById('xp-bar').style.width = `${Math.min(progress, 100)}%`;
+            document.getElementById('rank-badge').innerText = `${currentRank} Rank`;
+
+            document.querySelectorAll('.rank-row').forEach(row => {
+                row.classList.toggle('active', row.dataset.rank === currentRank);
+            });
+
+            // Vault Cards
+            const container = document.getElementById('vault-container');
+            container.innerHTML = "";
+
+            state.ambitionVault.forEach(quest => {
                 const card = document.createElement('div');
-                card.className = "glass p-6 rounded-[2rem] border border-purple-100 space-y-4 shadow-sm";
+                card.className = "quest-card glass p-5 rounded-[2rem] space-y-4 shadow-sm";
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
-                        <h4 class="font-black text-slate-800 text-xs uppercase tracking-widest">${quest.title}</h4>
-                        <button onclick="deleteQuest(${quest.id})" class="text-slate-300 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <h4 class="font-black text-slate-800 text-[11px] uppercase tracking-widest">${quest.title}</h4>
+                        <button onclick="deleteQuest(${quest.id})" class="text-slate-300 hover:text-red-400 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                     <div class="space-y-3">
-                        ${quest.tasks.map((task, idx) => `
-                            <div class="flex items-start gap-3 p-3 rounded-xl bg-white/50 border border-purple-50">
-                                <input type="checkbox" ${task.completed ? 'checked' : ''} 
-                                    onchange="toggleTask(${quest.id}, ${idx})"
-                                    class="mt-1 w-5 h-5 rounded-lg border-purple-200 text-purple-600 focus:ring-purple-500">
+                        ${quest.tasks.map(task => `
+                            <div class="flex items-start gap-3 p-3 rounded-2xl bg-white/50 border border-purple-50">
+                                <input type="checkbox" class="mt-1 w-5 h-5 rounded-lg border-purple-200 text-purple-600" 
+                                    ${task.completed ? 'checked' : ''} 
+                                    onchange="toggleTask(${quest.id}, ${task.id})">
                                 <div class="flex-1">
                                     <p class="text-[11px] font-bold text-slate-700 leading-tight">${task.name}</p>
-                                    <div class="flex justify-between items-center mt-1">
-                                        <a href="${task.url}" target="_blank" class="text-[9px] text-purple-500 font-bold hover:underline">LEARN NODE</a>
-                                        <span class="text-[9px] font-black text-slate-400">+${task.xp} XP</span>
-                                    </div>
+                                    <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.name)}" target="_blank" class="text-[9px] text-purple-400 font-bold hover:underline">Learning Resource</a>
                                 </div>
+                                <span class="text-[9px] font-black text-slate-400">+${task.xp}</span>
                             </div>
                         `).join('')}
                     </div>
                 `;
                 container.appendChild(card);
             });
+
             lucide.createIcons();
         }
 
-        function renderRankGuide(activeRank = 'E') {
-            const guide = document.getElementById('rankGuide');
-            guide.innerHTML = RANKS.slice().reverse().map(r => `
-                <div class="flex justify-between p-2 rounded-lg ${r.name === activeRank ? 'bg-purple-600 text-white font-bold' : 'text-slate-400'}">
-                    <span>${r.name} Rank</span>
-                    <span>${r.min} XP</span>
-                </div>
-            `).join('');
-        }
-
-        // --- INTERACTION ---
-        function toggleTask(questId, taskIdx) {
-            const quest = state.ambition_vault.find(q => q.id === questId);
-            quest.tasks[taskIdx].completed = !quest.tasks[taskIdx].completed;
-            syncUI();
-            saveSession();
-        }
-
         function deleteQuest(id) {
-            if (confirm("Delete this quest node?")) {
-                state.ambition_vault = state.ambition_vault.filter(q => q.id !== id);
-                syncUI();
-                renderVault();
+            if (confirm("Delete this ambition?")) {
+                state.ambitionVault = state.ambitionVault.filter(q => q.id !== id);
+                calculateGlobalXP();
+                renderApp();
                 saveSession();
             }
         }
 
         function resetSystem() {
-            if (confirm("Purge all system data?")) {
-                localStorage.removeItem('gemify_session');
+            if (confirm("Reset all evolution data?")) {
+                localStorage.removeItem(STORAGE_KEY);
                 location.reload();
             }
         }
 
         function toggleMobileLog() {
-            document.getElementById('questLog').classList.toggle('active');
+            document.getElementById('quest-log').classList.toggle('active');
         }
     </script>
 </body>
