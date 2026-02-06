@@ -21,13 +21,12 @@
             overflow: hidden;
             height: 100vh;
         }
-        /* 树动画 */
+        /* 经典树动画 */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; }
         @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
 
-        /* UI 组件 */
         .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
@@ -35,9 +34,9 @@
         .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
         .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
         
-        .sidebar-item { transition: all 0.2s ease; cursor: pointer; }
+        .sidebar-item { transition: all 0.2s ease; cursor: pointer; border: 1px solid transparent; }
         .sidebar-item:hover { background: rgba(179, 157, 219, 0.15); }
-        .sidebar-item.active { background: white; border: 1px solid var(--pastel-purple); }
+        .sidebar-item.active { background: white; border: 1px solid var(--pastel-purple); box-shadow: 0 4px 12px rgba(179, 157, 219, 0.05); }
 
         .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -45,7 +44,7 @@
 </head>
 <body>
 
-    <!-- PAGE 1: HERO SECTION (带树的经典版) -->
+    <!-- PAGE 1: HERO SECTION -->
     <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#FDFCFE] portal-transition">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
@@ -94,24 +93,27 @@
                 </div>
             </div>
 
-            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-6 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg">
+            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg">
                 <i data-lucide="plus" class="w-4 h-4"></i> New Ambition
             </button>
 
-            <!-- History -->
-            <div class="flex-1 overflow-y-auto no-scrollbar space-y-2">
-                <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Ambition Vault</h4>
-                <div id="vaultList" class="space-y-2"></div>
-            </div>
+            <!-- Ambition Vault (Active) -->
+            <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4>
+                    <div id="vaultList" class="space-y-2"></div>
+                </div>
 
-            <button onclick="resetSystem()" class="mt-4 py-3 text-[10px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all flex items-center justify-center gap-2">
-                <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reset System
-            </button>
+                <!-- Archived Ambition Section -->
+                <div>
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Archived Ambition</h4>
+                    <div id="archivedList" class="space-y-2 opacity-60"></div>
+                </div>
+            </div>
         </aside>
 
         <!-- CENTER CONTENT -->
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
-            
             <!-- SETUP FORM -->
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
                 <div class="text-center">
@@ -123,7 +125,6 @@
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label>
                         <input type="text" id="inputName" placeholder="Enter name..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
                     </div>
-                    
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
                         <div class="grid grid-cols-2 gap-4">
@@ -137,7 +138,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
                         <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
@@ -159,29 +159,26 @@
             </div>
         </section>
 
-        <!-- RESULT MODAL (Quest Log) -->
+        <!-- RESULT MODAL -->
         <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center">
                 <h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3>
                 <button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button>
             </div>
-            <!-- System Log Thinking Area -->
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed">
                 <p>[System: Awaiting Input...]</p>
             </div>
-            <!-- Task List -->
             <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
         </aside>
-
     </main>
 
     <script>
-        // --- STATE ---
         let session = {
             playerName: "Player",
             playerRole: "Warrior",
             currentId: null,
-            ambitionVault: []
+            ambitionVault: [],
+            archivedVault: []
         };
 
         const rankThresholds = [
@@ -189,22 +186,21 @@
             { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }
         ];
 
-        // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const saved = localStorage.getItem('gemify_vault_v2');
+            const saved = localStorage.getItem('gemify_vault_v3');
             if (saved) {
                 session = JSON.parse(saved);
-                if (session.ambitionVault.length > 0) {
+                if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     enterSystem();
-                    renderVault();
+                    renderVaults();
                     if (session.currentId) loadAmbition(session.currentId);
                 }
             }
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v2', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v3', JSON.stringify(session));
             updateGlobalXP();
         }
 
@@ -235,7 +231,7 @@
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('inputAmbition').value = '';
             toggleModal(false);
-            renderVault();
+            renderVaults();
         }
 
         async function startEvolution() {
@@ -260,18 +256,16 @@
             session.ambitionVault.unshift(newAmbition);
             session.currentId = id;
             
-            // UI Transition
             document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             
-            // Auto Open Modal and Run Logs
             toggleModal(true);
             await runLogs(title);
             
             renderTasks(newAmbition);
-            renderVault();
+            renderVaults();
             save();
         }
 
@@ -290,26 +284,55 @@
 
         function loadAmbition(id) {
             session.currentId = id;
-            const data = session.ambitionVault.find(a => a.id === id);
+            const data = session.ambitionVault.find(a => a.id === id) || session.archivedVault.find(a => a.id === id);
             document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = data.title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
             updateSidebarIcon(data.role);
             renderTasks(data);
-            renderVault();
+            renderVaults();
             save();
         }
 
-        function renderVault() {
-            const list = document.getElementById('vaultList');
-            list.innerHTML = '';
+        function archiveAmbition(e, id) {
+            e.stopPropagation();
+            const index = session.ambitionVault.findIndex(a => a.id === id);
+            const item = session.ambitionVault.splice(index, 1)[0];
+            session.archivedVault.unshift(item);
+            if (session.currentId === id) createNewAmbition();
+            renderVaults();
+            save();
+        }
+
+        function renderVaults() {
+            const activeList = document.getElementById('vaultList');
+            const archivedList = document.getElementById('archivedList');
+            activeList.innerHTML = '';
+            archivedList.innerHTML = '';
+
             session.ambitionVault.forEach(ambition => {
+                const div = document.createElement('div');
+                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === ambition.id ? 'active' : ''}`;
+                div.onclick = () => loadAmbition(ambition.id);
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 truncate">
+                        <i data-lucide="target" class="w-4 h-4 text-purple-400"></i>
+                        <span class="truncate">${ambition.title}</span>
+                    </div>
+                    <button onclick="archiveAmbition(event, ${ambition.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-100 rounded-lg transition-all">
+                        <i data-lucide="archive" class="w-4 h-4 text-slate-400"></i>
+                    </button>
+                `;
+                activeList.appendChild(div);
+            });
+
+            session.archivedVault.forEach(ambition => {
                 const div = document.createElement('div');
                 div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center gap-3 ${session.currentId === ambition.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(ambition.id);
-                div.innerHTML = `<i data-lucide="target" class="w-4 h-4 text-purple-400"></i> <span class="truncate">${ambition.title}</span>`;
-                list.appendChild(div);
+                div.innerHTML = `<i data-lucide="package" class="w-4 h-4 text-slate-400"></i> <span class="truncate">${ambition.title}</span>`;
+                archivedList.appendChild(div);
             });
             lucide.createIcons();
         }
@@ -336,21 +359,20 @@
         }
 
         function toggleTask(index) {
-            const ambition = session.ambitionVault.find(a => a.id === session.currentId);
+            const ambition = session.ambitionVault.find(a => a.id === session.currentId) || session.archivedVault.find(a => a.id === session.currentId);
             ambition.tasks[index].completed = !ambition.tasks[index].completed;
             save();
         }
 
         function updateGlobalXP() {
             let total = 0;
-            session.ambitionVault.forEach(a => {
+            [...session.ambitionVault, ...session.archivedVault].forEach(a => {
                 a.tasks.forEach(t => { if (t.completed) total += t.xp; });
             });
             let rankIdx = 0;
             rankThresholds.forEach((r, i) => { if (total >= r.xp) rankIdx = i; });
             const currentRank = rankThresholds[rankIdx];
             const next = rankThresholds[rankIdx + 1] || {xp: 2100};
-
             document.getElementById('xpText').innerText = `${total}/${next.xp}`;
             document.getElementById('xpBar').style.width = `${Math.min((total / next.xp) * 100, 100)}%`;
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
@@ -358,24 +380,7 @@
 
         function toggleModal(show) {
             document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
-            if (session.initialized) document.getElementById('statusTab').classList.toggle('hidden', show);
         }
-
-        function resetSystem() {
-            if (confirm("Reset all ambitions? You will stay on the awakening page.")) {
-                localStorage.removeItem('gemify_vault_v2');
-                session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [] };
-                createNewAmbition();
-                updateGlobalXP();
-            }
-        }
-
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !session.currentId) {
-                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
-                else startEvolution();
-            }
-        });
     </script>
 </body>
 </html>
