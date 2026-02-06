@@ -69,7 +69,7 @@
     <!-- MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 portal-transition">
         
-        <!-- SIDEBAR (Gemini Style) -->
+        <!-- SIDEBAR -->
         <aside class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50">
             <!-- Stats -->
             <div class="mb-6 space-y-4">
@@ -97,18 +97,26 @@
                 <i data-lucide="plus" class="w-4 h-4"></i> New Ambition
             </button>
 
-            <!-- Ambition Vault (Active) -->
+            <!-- Vaults -->
             <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
                 <div>
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4>
                     <div id="vaultList" class="space-y-2"></div>
                 </div>
-
-                <!-- Archived Ambition Section -->
                 <div>
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Archived Ambition</h4>
                     <div id="archivedList" class="space-y-2 opacity-60"></div>
                 </div>
+            </div>
+
+            <!-- BOTTOM ACTIONS -->
+            <div class="mt-auto pt-6 border-t border-purple-100 space-y-2">
+                <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-all">
+                    <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+                </button>
+                <button onclick="resetSystem()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> Reset System
+                </button>
             </div>
         </aside>
 
@@ -188,11 +196,13 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const saved = localStorage.getItem('gemify_vault_v3');
+            const saved = localStorage.getItem('gemify_vault_v4');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
-                    enterSystem();
+                    // 自动进入系统，但不显示 Hero
+                    document.getElementById('heroPage').classList.add('hidden');
+                    document.getElementById('appPage').classList.remove('opacity-0');
                     renderVaults();
                     if (session.currentId) loadAmbition(session.currentId);
                 }
@@ -200,7 +210,7 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v3', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v4', JSON.stringify(session));
             updateGlobalXP();
         }
 
@@ -210,6 +220,25 @@
                 document.getElementById('heroPage').classList.add('hidden');
                 document.getElementById('appPage').classList.remove('opacity-0');
             }, 600);
+        }
+
+        function logout() {
+            document.getElementById('appPage').classList.add('opacity-0');
+            setTimeout(() => {
+                document.getElementById('appPage').classList.add('hidden');
+                document.getElementById('heroPage').classList.remove('hidden');
+                setTimeout(() => document.getElementById('heroPage').classList.remove('hidden-state'), 50);
+            }, 600);
+        }
+
+        function resetSystem() {
+            if (confirm("DANGER: This will permanently delete all ambitions and XP. Continue?")) {
+                localStorage.removeItem('gemify_vault_v4');
+                session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+                createNewAmbition();
+                updateGlobalXP();
+                alert("System Reset Complete.");
+            }
         }
 
         function selectRole(role) {
