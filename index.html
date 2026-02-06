@@ -23,11 +23,9 @@
             min-height: 100vh;
         }
 
-        /* 动画效果 */
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
         
-        /* Sidebar 折叠逻辑 */
         .sidebar-transition { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .sidebar-collapsed { transform: translateX(-100%); width: 0 !important; overflow: hidden; padding: 0 !important; border: none !important; }
 
@@ -39,7 +37,6 @@
         .role-card.active .icon-box { background: var(--deep-purple); color: white; }
 
         .rank-row.active { color: var(--deep-purple); font-weight: 800; background: rgba(255,255,255,0.6); border-radius: 12px; }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
@@ -69,7 +66,6 @@
     <!-- PAGE 2: MAIN APP -->
     <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col md:flex-row portal-transition">
         
-        <!-- SIDEBAR TOGGLE BUTTON (Hamburger) -->
         <button onclick="toggleSidebar()" class="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-purple-100 hover:bg-purple-50 transition-all">
             <i data-lucide="menu" class="w-6 h-6 text-slate-700"></i>
         </button>
@@ -160,7 +156,7 @@
                     </div>
                     <h2 class="text-sm font-black tracking-[0.4em] text-purple-500 uppercase">System Online</h2>
                     <h1 id="dashAmbition" class="text-4xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase"></h1>
-                    <p class="text-slate-500 max-w-md mx-auto">Your evolution path is active. Complete tasks to increase your Rank and unlock your true potential.</p>
+                    <p class="text-slate-500 max-w-md mx-auto">Your evolution path is active. Complete tasks to increase your Rank.</p>
                 </div>
                 <button onclick="toggleModal(true)" class="px-8 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto">
                     VIEW EVOLUTION PATH <i data-lucide="layout-list" class="w-5 h-5"></i>
@@ -178,7 +174,6 @@
             <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
         </aside>
 
-        <!-- MINIMIZED TAB (Result Modal) -->
         <button id="statusTab" onclick="toggleModal(true)" class="fixed right-0 top-1/2 -translate-y-1/2 bg-slate-900 text-white p-3 rounded-l-xl shadow-2xl z-40 hidden">
             <i data-lucide="layout-list"></i>
         </button>
@@ -222,11 +217,8 @@
 
         function applySidebarState() {
             const sidebar = document.getElementById('sidebar');
-            if (state.sidebarCollapsed) {
-                sidebar.classList.add('sidebar-collapsed');
-            } else {
-                sidebar.classList.remove('sidebar-collapsed');
-            }
+            if (state.sidebarCollapsed) sidebar.classList.add('sidebar-collapsed');
+            else sidebar.classList.remove('sidebar-collapsed');
         }
 
         function restoreSession() {
@@ -247,10 +239,45 @@
             document.getElementById('dashboardSection').classList.remove('hidden');
         }
 
+        // --- 核心修改：Reset 逻辑 ---
         function resetSystem() {
-            if (confirm("Reset all progress?")) {
+            if (confirm("Reset all progress? You will stay on this page.")) {
+                // 1. 清除存储
                 localStorage.removeItem('GemifySession');
-                location.reload();
+                
+                // 2. 重置内存状态
+                state = {
+                    initialized: false,
+                    sidebarCollapsed: false,
+                    name: '',
+                    role: 'male',
+                    ambition: '',
+                    totalXP: 0,
+                    tasks: [],
+                    logs: []
+                };
+
+                // 3. 重置 UI 元素
+                document.getElementById('setupSection').classList.remove('hidden');
+                document.getElementById('dashboardSection').classList.add('hidden');
+                document.getElementById('inputName').value = '';
+                document.getElementById('inputAmbition').value = '';
+                document.getElementById('statName').innerText = 'Player';
+                document.getElementById('dashAmbition').innerText = '';
+                
+                // 4. 重置 Sidebar 和 Modal
+                updateXPUI();
+                updateSidebarIcon('male');
+                selectRole('male');
+                toggleModal(false);
+                applySidebarState();
+                
+                // 5. 清空容器
+                document.getElementById('logContainer').innerHTML = '';
+                document.getElementById('taskContainer').innerHTML = '';
+                
+                // 6. 隐藏状态标签
+                document.getElementById('statusTab').classList.add('hidden');
             }
         }
 
