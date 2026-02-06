@@ -17,11 +17,11 @@
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #fdfbff;
-            overflow: hidden;
             color: #2D3748;
+            overflow-x: hidden;
         }
 
-        /* Utopian Tree Node Background */
+        /* 动态背景 */
         .tree-bg {
             position: fixed;
             inset: 0;
@@ -29,254 +29,188 @@
             background: radial-gradient(circle at 50% 50%, var(--lilac) 0%, #ffffff 100%);
         }
 
-        .node {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: var(--pastel-purple);
-            border-radius: 50%;
-            filter: blur(1px);
-            animation: float 20s infinite linear;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0) translateX(0); opacity: 0; }
-            50% { opacity: 0.5; }
-            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
-        }
-
-        /* Portal Transition */
-        .portal-exit {
-            transform: scale(1.5);
-            filter: blur(20px);
-            opacity: 0;
-            transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
-            pointer-events: none;
-        }
-
-        .portal-enter {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-        }
-
-        /* Glassmorphism */
         .glass {
             background: rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.5);
         }
 
-        .system-log-light {
-            font-family: 'Fira Code', monospace;
-            background: rgba(230, 230, 250, 0.6);
-            border: 1px solid var(--pastel-purple);
-            color: var(--deep-purple);
+        /* 手机端适配：侧边栏在移动端变为顶部栏 */
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                width: 100% !important;
+                height: auto !important;
+                border-right: none !important;
+                border-bottom: 1px solid var(--lilac);
+            }
+            .main-content {
+                flex-direction: column !important;
+            }
+            .modal-mobile {
+                width: 100% !important;
+            }
         }
 
-        /* Modal Slide */
-        .modal-hidden { transform: translateX(110%); }
-        .modal-visible { transform: translateX(0); }
+        /* 系统日志美化 */
+        .system-log-panel {
+            background: rgba(230, 230, 250, 0.4);
+            border: 1px solid var(--pastel-purple);
+            font-family: 'Fira Code', monospace;
+            color: var(--deep-purple);
+            box-shadow: inset 0 0 15px rgba(179, 157, 219, 0.2);
+        }
 
-        /* Floating Tab */
-        .status-tab {
+        /* 悬浮按钮 */
+        .floating-status {
             writing-mode: vertical-rl;
             text-orientation: mixed;
+        }
+
+        .portal-transition {
+            transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1);
         }
     </style>
 </head>
 <body>
 
-    <div class="tree-bg" id="treeBg"></div>
+    <div class="tree-bg"></div>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col items-center justify-center z-50 transition-all duration-1000">
-        <div class="text-center space-y-6 px-4">
-            <div class="flex justify-center mb-4">
-                <div class="p-5 rounded-[2rem] bg-white shadow-2xl shadow-purple-200 animate-pulse">
-                    <i data-lucide="gem" class="w-12 h-12 text-purple-500"></i>
-                </div>
+    <section id="heroPage" class="fixed inset-0 flex flex-col items-center justify-center z-50 bg-white/80 backdrop-blur-md transition-all duration-1000">
+        <div class="text-center space-y-6 px-6">
+            <div class="inline-block p-4 rounded-3xl bg-white shadow-xl mb-4">
+                <i data-lucide="gem" class="w-12 h-12 text-purple-500"></i>
             </div>
-            <h1 class="text-6xl md:text-8xl font-extrabold tracking-tighter text-slate-900">
+            <h1 class="text-5xl md:text-8xl font-extrabold tracking-tighter text-slate-900">
                 Discover.<br>Define.<br>
                 <span class="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-600">Dominate.</span>
             </h1>
-            <p class="text-slate-400 text-lg font-light tracking-[0.5em] uppercase">Gemify Evolution Protocol</p>
-            <button onclick="enterSystem()" class="mt-10 px-12 py-5 bg-slate-900 text-white font-bold rounded-full hover:shadow-[0_0_30px_rgba(179,157,219,0.5)] transition-all flex items-center gap-3 mx-auto">
+            <p class="text-slate-500 text-sm md:text-lg font-light tracking-[0.2em] uppercase">Gemify Evolution Protocol</p>
+            <button onclick="enterSystem()" class="mt-8 px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:scale-105 transition-transform shadow-2xl flex items-center gap-3 mx-auto">
                 ENTER THE SYSTEM
-                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
             </button>
         </div>
     </section>
 
     <!-- PAGE 2: AWAKENING SYSTEM -->
-    <main id="awakeningPage" class="opacity-0 translate-y-10 transition-all duration-1000 flex h-screen overflow-hidden">
+    <main id="awakeningPage" class="opacity-0 translate-y-10 transition-all duration-1000 flex flex-col md:flex-row h-screen overflow-hidden main-content">
         
-        <!-- LEFT SIDEBAR -->
-        <aside class="w-[320px] glass h-full border-r border-purple-100 p-8 flex flex-col z-20">
-            <div class="flex items-center gap-4 mb-10">
-                <div id="genderIcon" class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white shadow-xl">
+        <!-- SIDEBAR (Stats) -->
+        <aside class="w-full md:w-[300px] glass p-6 md:p-8 flex flex-col sidebar-mobile z-20">
+            <div class="flex items-center gap-4 mb-6 md:mb-10">
+                <div id="genderIcon" class="w-12 h-12 rounded-2xl bg-purple-600 flex items-center justify-center text-white shadow-lg">
                     <i data-lucide="user"></i>
                 </div>
                 <div>
-                    <h2 id="statName" class="font-bold text-slate-800 text-lg">Player</h2>
-                    <span id="rankBadge" class="text-[10px] font-black px-3 py-1 bg-slate-900 text-white rounded-full tracking-widest">E RANK</span>
+                    <h2 id="statName" class="font-bold text-slate-800">Player</h2>
+                    <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-slate-900 text-white rounded">E RANK</span>
                 </div>
             </div>
 
-            <div class="space-y-3 mb-10">
-                <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <span>Evolution Progress</span>
-                    <span id="xpText">0 / 100 XP</span>
+            <div class="space-y-2 mb-6 md:mb-10">
+                <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <span>Total XP</span>
+                    <span id="xpText">0 / 100</span>
                 </div>
-                <div class="w-full h-3 bg-purple-100 rounded-full p-0.5">
-                    <div id="xpBar" class="h-full bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full transition-all duration-700" style="width: 0%"></div>
+                <div class="w-full h-1.5 bg-purple-100 rounded-full overflow-hidden">
+                    <div id="xpBar" class="h-full bg-gradient-to-r from-purple-400 to-indigo-500 transition-all duration-500" style="width: 0%"></div>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto pr-2">
-                <h3 class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-[0.2em]">Rank Progression Guide</h3>
-                <table class="w-full text-xs border-separate border-spacing-y-3">
-                    <tr class="rank-row transition-all duration-300" data-rank="E">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold">E Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">Base</td>
-                    </tr>
-                    <tr class="rank-row transition-all duration-300" data-rank="D">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold">D Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">100 XP</td>
-                    </tr>
-                    <tr class="rank-row transition-all duration-300" data-rank="C">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold">C Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">200 XP</td>
-                    </tr>
-                    <tr class="rank-row transition-all duration-300" data-rank="B">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold">B Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">300 XP</td>
-                    </tr>
-                    <tr class="rank-row transition-all duration-300" data-rank="A">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold">A Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">400 XP</td>
-                    </tr>
-                    <tr class="rank-row transition-all duration-300" data-rank="S">
-                        <td class="py-2 px-3 rounded-l-xl bg-white/50 font-bold text-purple-600">S Rank</td>
-                        <td class="py-2 px-3 rounded-r-xl bg-white/50 text-right text-slate-400">500 XP</td>
-                    </tr>
+            <div class="hidden md:block flex-1 overflow-y-auto">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">Rank Progression</h3>
+                <table class="w-full text-left text-xs border-separate border-spacing-y-2">
+                    <tr class="rank-row" data-rank="E"><td>E Rank</td><td class="text-right">Base</td></tr>
+                    <tr class="rank-row" data-rank="D"><td>D Rank</td><td class="text-right">100 XP</td></tr>
+                    <tr class="rank-row" data-rank="C"><td>C Rank</td><td class="text-right">200 XP</td></tr>
+                    <tr class="rank-row" data-rank="B"><td>B Rank</td><td class="text-right">300 XP</td></tr>
+                    <tr class="rank-row" data-rank="A"><td>A Rank</td><td class="text-right">400 XP</td></tr>
+                    <tr class="rank-row" data-rank="S"><td>S Rank</td><td class="text-right">500 XP</td></tr>
+                    <tr class="rank-row" data-rank="SS"><td>SS Rank</td><td class="text-right">600 XP</td></tr>
                 </table>
             </div>
         </aside>
 
-        <!-- MAIN SETUP AREA -->
-        <section class="flex-1 flex flex-col items-center justify-center p-12 relative z-10">
-            <div class="max-w-xl w-full space-y-10">
-                <div class="text-center space-y-2">
-                    <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight">Awakening Sequence</h2>
-                    <p class="text-slate-400 font-light">The system is ready to map your potential.</p>
+        <!-- MAIN SETUP -->
+        <section class="flex-1 flex flex-col items-center justify-center p-6 md:p-12 overflow-y-auto">
+            <div class="max-w-xl w-full space-y-6 md:space-y-8">
+                <div class="text-center md:text-left">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900">Awakening</h2>
+                    <p class="text-slate-500 text-sm">Define your ambition to begin the evolution.</p>
                 </div>
 
-                <div class="glass p-8 rounded-[2.5rem] shadow-xl space-y-6">
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-purple-400 uppercase tracking-widest ml-2">Player Name</label>
-                            <input type="text" id="inputName" placeholder="Your Name" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 focus:ring-4 focus:ring-purple-100 outline-none transition-all">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-[10px] font-black text-purple-400 uppercase tracking-widest ml-2">Character Role</label>
-                            <select id="inputGender" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 focus:ring-4 focus:ring-purple-100 outline-none transition-all">
-                                <option value="male">Warrior / Male</option>
-                                <option value="female">Mage / Female</option>
-                                <option value="neutral">Architect / Neutral</option>
-                            </select>
-                        </div>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="inputName" placeholder="Player Name" class="w-full p-4 rounded-2xl bg-white border border-purple-100 focus:ring-2 focus:ring-purple-300 outline-none transition-all">
+                        <select id="inputGender" class="w-full p-4 rounded-2xl bg-white border border-purple-100 outline-none">
+                            <option value="male">Male / Warrior</option>
+                            <option value="female">Female / Mage</option>
+                            <option value="neutral">Neutral / Architect</option>
+                        </select>
                     </div>
-
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black text-purple-400 uppercase tracking-widest ml-2">Core Ambition</label>
-                        <input type="text" id="inputAmbition" placeholder="What is your ultimate goal?" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 focus:ring-4 focus:ring-purple-100 outline-none transition-all">
-                    </div>
-
-                    <button onclick="initializeEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-2xl hover:bg-purple-600 transition-all transform hover:-translate-y-1">
-                        INITIALIZE EVOLUTION
+                    <input type="text" id="inputAmbition" placeholder="Your Core Ambition (e.g. Master Chef)" class="w-full p-4 rounded-2xl bg-white border border-purple-100 focus:ring-2 focus:ring-purple-300 outline-none transition-all">
+                    <button onclick="initializeEvolution()" class="w-full py-4 bg-purple-600 text-white font-black rounded-2xl shadow-lg hover:bg-purple-700 transition-all">
+                        INITIALIZE SYSTEM
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- RIGHT RESULT MODAL (35%) -->
-        <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[35%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-30 modal-hidden transition-all duration-700 flex flex-col overflow-hidden">
-            <!-- Modal Header -->
-            <div class="p-8 flex justify-between items-center border-b border-purple-50">
-                <div>
-                    <h3 class="font-black text-slate-800 uppercase tracking-tighter text-xl">Evolution Path</h3>
-                    <p class="text-[10px] text-purple-400 font-bold uppercase tracking-widest">Gemify System Active</p>
+        <!-- RESULT MODAL (35% Desktop, 100% Mobile) -->
+        <aside id="resultModal" class="fixed top-0 right-0 h-full w-full md:w-[35%] glass border-l border-purple-100 translate-x-full transition-transform duration-500 z-50 flex flex-col modal-mobile">
+            <div class="p-6 border-b border-purple-50 flex justify-between items-center bg-white/50">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                    <h3 class="font-black text-xs uppercase tracking-widest">Evolution Path</h3>
                 </div>
-                <button onclick="toggleModal(false)" class="p-3 bg-purple-50 text-purple-400 rounded-2xl hover:bg-purple-100 transition-colors">
-                    <i data-lucide="minimize-2" class="w-5 h-5"></i>
+                <button onclick="toggleModal(false)" class="p-2 hover:bg-purple-100 rounded-full transition-colors">
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <!-- System Logs (Light Version) -->
-            <div id="logContainer" class="mx-8 mt-6 p-5 system-log-light rounded-2xl h-32 overflow-y-auto text-[11px] leading-relaxed">
-                <p class="animate-pulse">[Gemini: Waiting for input...]</p>
+            <!-- System Logs (Utopian Style) -->
+            <div id="logContainer" class="p-6 system-log-panel m-4 rounded-2xl h-40 overflow-y-auto text-[10px] space-y-1">
+                <p>> System Standby...</p>
             </div>
 
             <!-- Task List -->
-            <div id="taskContainer" class="flex-1 overflow-y-auto p-8 space-y-8">
-                <!-- Tasks will be injected here -->
+            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-8">
+                <!-- Tasks here -->
             </div>
         </aside>
 
-        <!-- MINIMIZED STATUS TAB -->
-        <button id="statusTab" onclick="toggleModal(true)" class="fixed right-0 top-1/2 -translate-y-1/2 bg-slate-900 text-white p-3 rounded-l-2xl shadow-2xl z-20 hidden flex flex-col items-center gap-4 hover:pr-6 transition-all">
-            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-            <span class="status-tab text-[10px] font-black uppercase tracking-[0.3em]">Status</span>
+        <!-- FLOATING MINIMIZE BUTTON -->
+        <button id="floatingBtn" onclick="toggleModal(true)" class="fixed right-0 top-1/2 -translate-y-1/2 bg-slate-900 text-white px-2 py-6 rounded-l-2xl shadow-2xl hidden z-40 floating-status hover:pr-4 transition-all">
+            <span class="text-[10px] font-black tracking-widest uppercase">SYSTEM STATUS</span>
         </button>
     </main>
 
     <script>
         lucide.createIcons();
 
-        // Background Nodes
-        const treeBg = document.getElementById('treeBg');
-        for (let i = 0; i < 40; i++) {
-            const node = document.createElement('div');
-            node.className = 'node';
-            node.style.left = Math.random() * 100 + 'vw';
-            node.style.top = Math.random() * 100 + 'vh';
-            node.style.animationDelay = Math.random() * 20 + 's';
-            treeBg.appendChild(node);
-        }
-
         let currentXP = 0;
         let currentRankIndex = 0;
-        const ranks = ['E', 'D', 'C', 'B', 'A', 'S'];
-        const thresholds = [100, 200, 300, 400, 500];
+        const ranks = ['E', 'D', 'C', 'B', 'A', 'S', 'SS'];
+        const thresholds = [100, 200, 300, 400, 500, 600];
 
         function enterSystem() {
-            document.getElementById('heroPage').classList.add('portal-exit');
+            document.getElementById('heroPage').classList.add('opacity-0', 'scale-110');
             setTimeout(() => {
                 document.getElementById('heroPage').classList.add('hidden');
-                document.getElementById('awakeningPage').classList.add('portal-enter');
+                document.getElementById('awakeningPage').classList.add('opacity-100', 'translate-y-0');
             }, 800);
         }
 
-        // Enter Key Support
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
-                else initializeEvolution();
-            }
-        });
-
         function toggleModal(show) {
             const modal = document.getElementById('resultModal');
-            const tab = document.getElementById('statusTab');
+            const floatBtn = document.getElementById('floatingBtn');
             if (show) {
-                modal.classList.remove('modal-hidden');
-                modal.classList.add('modal-visible');
-                tab.classList.add('hidden');
+                modal.classList.remove('translate-x-full');
+                floatBtn.classList.add('hidden');
             } else {
-                modal.classList.add('modal-hidden');
-                modal.classList.remove('modal-visible');
-                tab.classList.remove('hidden');
+                modal.classList.add('translate-x-full');
+                floatBtn.classList.remove('hidden');
             }
         }
 
@@ -301,84 +235,74 @@
 
         async function runLogs(ambition) {
             const logs = [
-                `[System: Scanning Player Potential...]`,
-                `[Gemini: Ambition "${ambition}" detected...]`,
-                `[System: Mapping Utopian Evolution Path...]`,
-                `[System: Sequence Complete. Good luck, Player.]`
+                `[Gemify: Scanning Potential...]`,
+                `[Gemify: Ambition "${ambition}" detected]`,
+                `[Gemify: Mapping Evolution Nodes...]`,
+                `[Gemify: Sequence Complete.]`
             ];
             const container = document.getElementById('logContainer');
             container.innerHTML = '';
             for (const log of logs) {
                 const p = document.createElement('p');
-                p.className = "mb-1 border-l-2 border-purple-300 pl-2";
-                p.innerText = log;
+                p.innerText = `> ${log}`;
                 container.appendChild(p);
                 container.scrollTop = container.scrollHeight;
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 500));
             }
         }
 
         function generateTasks(ambition) {
             const container = document.getElementById('taskContainer');
             container.innerHTML = '';
-
             const stages = [
-                { title: "Stage 1: Foundation", tasks: [
-                    { t: `Master the fundamentals of ${ambition}`, xp: 20, link: "https://www.youtube.com" },
-                    { t: "Establish a daily 1-hour deep work ritual", xp: 15, link: "https://www.coursera.org" }
+                { title: "Stage 1: Awakening", tasks: [
+                    { t: `Research ${ambition} fundamentals`, xp: 15, link: "https://www.youtube.com" },
+                    { t: "Set initial growth milestones", xp: 10, link: "https://www.coursera.org" }
                 ]},
-                { title: "Stage 2: Ascension", tasks: [
-                    { t: "Complete your first milestone project", xp: 45, link: "https://github.com" },
-                    { t: "Analyze 3 industry leaders' workflows", xp: 20, link: "https://www.linkedin.com" }
+                { title: "Stage 2: Practice", tasks: [
+                    { t: "Complete 2 hours of deep work", xp: 25, link: "https://www.udemy.com" }
                 ]}
             ];
 
             stages.forEach(stage => {
                 const stageDiv = document.createElement('div');
                 stageDiv.innerHTML = `
-                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em] mb-4">${stage.title}</h4>
-                    <div class="space-y-4">
+                    <h4 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4">${stage.title}</h4>
+                    <div class="space-y-3">
                         ${stage.tasks.map(task => `
-                            <div class="group flex items-start gap-4 p-5 rounded-[1.5rem] bg-white/40 border border-purple-50 hover:border-purple-200 hover:bg-white transition-all shadow-sm hover:shadow-md">
-                                <input type="checkbox" class="mt-1 w-6 h-6 rounded-lg border-purple-200 text-purple-600 focus:ring-purple-500 transition-all cursor-pointer" 
-                                    onchange="updateXP(${task.xp}, this)">
+                            <div class="flex items-start gap-3 p-4 rounded-2xl bg-white/60 border border-purple-50 shadow-sm">
+                                <input type="checkbox" class="mt-1 w-5 h-5 rounded border-purple-200 text-purple-600" onchange="updateXP(${task.xp}, this)">
                                 <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-700 group-hover:text-purple-700 transition-colors">${task.t}</p>
-                                    <a href="${task.link}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:text-indigo-500 flex items-center gap-1 mt-1">
-                                        <i data-lucide="external-link" class="w-3 h-3"></i> [Learn here: Link]
-                                    </a>
+                                    <p class="text-xs font-bold text-slate-700">${task.t}</p>
+                                    <a href="${task.link}" target="_blank" class="text-[10px] text-purple-400 hover:underline">[Learn: Link]</a>
                                 </div>
-                                <span class="text-[10px] font-black text-slate-300 group-hover:text-purple-400">+${task.xp} XP</span>
+                                <span class="text-[10px] font-black text-slate-300">+${task.xp}</span>
                             </div>
                         `).join('')}
                     </div>
                 `;
                 container.appendChild(stageDiv);
             });
-            lucide.createIcons();
         }
 
         function updateXP(amount, checkbox) {
-            if (checkbox.checked) currentXP += amount;
-            else currentXP -= amount;
-
+            currentXP += checkbox.checked ? amount : -amount;
             let newRankIndex = 0;
-            for (let i = 0; i < thresholds.length; i++) {
-                if (currentXP >= thresholds[i]) newRankIndex = i + 1;
-            }
-
+            thresholds.forEach((t, i) => { if (currentXP >= t) newRankIndex = i + 1; });
+            
             const targetXP = thresholds[newRankIndex] || 600;
-            document.getElementById('xpText').innerText = `${currentXP} / ${targetXP} XP`;
+            document.getElementById('xpText').innerText = `${currentXP} / ${targetXP}`;
             document.getElementById('xpBar').style.width = `${Math.min((currentXP / targetXP) * 100, 100)}%`;
             document.getElementById('rankBadge').innerText = `${ranks[newRankIndex]} RANK`;
-
-            document.querySelectorAll('.rank-row').forEach(row => {
-                row.className = "rank-row transition-all duration-300";
-                if (row.dataset.rank === ranks[newRankIndex]) {
-                    row.classList.add('bg-purple-600', 'text-white', 'shadow-lg', 'scale-105');
-                }
-            });
         }
+
+        // Enter Key Support
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
+                else initializeEvolution();
+            }
+        });
     </script>
 </body>
 </html>
