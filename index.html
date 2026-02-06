@@ -23,13 +23,13 @@
             min-height: 100vh;
         }
 
-        .tree-node { animation: pulse-node 3s infinite ease-in-out; filter: drop-shadow(0 0 8px var(--pastel-purple)); }
-        @keyframes pulse-node { 0%, 100% { r: 4; opacity: 0.6; } 50% { r: 7; opacity: 1; } }
-        .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw-branch 4s forwards ease-out; }
-        @keyframes draw-branch { to { stroke-dashoffset: 0; } }
-
+        /* 动画效果 */
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
+        
+        /* Sidebar 折叠逻辑 */
+        .sidebar-transition { transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), width 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .sidebar-collapsed { transform: translateX(-100%); width: 0 !important; overflow: hidden; padding: 0 !important; border: none !important; }
 
         .glass { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
@@ -49,11 +49,11 @@
     <section id="heroPage" class="min-h-screen flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-8 portal-transition">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[300px] md:max-w-[400px] h-auto">
-                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" class="branch" />
-                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
-                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 1s" />
-                <circle cx="80" cy="200" r="5" fill="#7E57C2" class="tree-node" />
-                <circle cx="320" cy="150" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 0.7s" />
+                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" />
+                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" />
+                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" />
+                <circle cx="80" cy="200" r="5" fill="#7E57C2" />
+                <circle cx="320" cy="150" r="5" fill="#7E57C2" />
             </svg>
         </div>
         <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
@@ -69,8 +69,14 @@
     <!-- PAGE 2: MAIN APP -->
     <main id="awakeningPage" class="fixed inset-0 hidden opacity-0 flex flex-col md:flex-row portal-transition">
         
+        <!-- SIDEBAR TOGGLE BUTTON (Hamburger) -->
+        <button onclick="toggleSidebar()" class="fixed top-6 left-6 z-50 p-3 bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-purple-100 hover:bg-purple-50 transition-all">
+            <i data-lucide="menu" class="w-6 h-6 text-slate-700"></i>
+        </button>
+
         <!-- SIDEBAR -->
-        <aside class="w-full md:w-[320px] glass border-b md:border-r border-white/50 p-6 md:p-8 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-6 z-20">
+        <aside id="sidebar" class="w-full md:w-[320px] glass border-b md:border-r border-white/50 p-6 md:p-8 pt-20 md:pt-24 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-6 z-40 sidebar-transition relative">
+            
             <div class="flex flex-col gap-6 w-full">
                 <div class="flex items-center gap-4">
                     <div id="sidebarIcon" class="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white shadow-lg">
@@ -114,7 +120,7 @@
         <!-- CENTER CONTENT AREA -->
         <section class="flex-1 relative flex flex-col items-center justify-start md:justify-center p-4 md:p-12 overflow-y-auto no-scrollbar">
             
-            <!-- SETUP VIEW (Visible before initialization) -->
+            <!-- SETUP VIEW -->
             <div id="setupSection" class="max-w-2xl w-full glass p-6 md:p-12 rounded-[2.5rem] shadow-2xl space-y-8 my-4">
                 <div class="text-center md:text-left">
                     <h2 class="text-3xl font-extrabold text-slate-900">System Awakening</h2>
@@ -146,7 +152,7 @@
                 </div>
             </div>
 
-            <!-- DASHBOARD VIEW (Visible after initialization) -->
+            <!-- DASHBOARD VIEW -->
             <div id="dashboardSection" class="hidden max-w-2xl w-full text-center space-y-8 p-6">
                 <div class="space-y-4">
                     <div class="inline-block p-4 rounded-full bg-white shadow-xl animate-bounce">
@@ -160,7 +166,6 @@
                     VIEW EVOLUTION PATH <i data-lucide="layout-list" class="w-5 h-5"></i>
                 </button>
             </div>
-
         </section>
 
         <!-- RESULT MODAL -->
@@ -173,7 +178,7 @@
             <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
         </aside>
 
-        <!-- MINIMIZED TAB -->
+        <!-- MINIMIZED TAB (Result Modal) -->
         <button id="statusTab" onclick="toggleModal(true)" class="fixed right-0 top-1/2 -translate-y-1/2 bg-slate-900 text-white p-3 rounded-l-xl shadow-2xl z-40 hidden">
             <i data-lucide="layout-list"></i>
         </button>
@@ -182,6 +187,7 @@
     <script>
         let state = {
             initialized: false,
+            sidebarCollapsed: false,
             name: '',
             role: 'male',
             ambition: '',
@@ -208,6 +214,21 @@
             localStorage.setItem('GemifySession', JSON.stringify(state));
         }
 
+        function toggleSidebar() {
+            state.sidebarCollapsed = !state.sidebarCollapsed;
+            applySidebarState();
+            saveSession();
+        }
+
+        function applySidebarState() {
+            const sidebar = document.getElementById('sidebar');
+            if (state.sidebarCollapsed) {
+                sidebar.classList.add('sidebar-collapsed');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+            }
+        }
+
         function restoreSession() {
             if (!state.initialized) return;
             document.getElementById('heroPage').classList.add('hidden');
@@ -220,8 +241,8 @@
             updateXPUI();
             renderLogs();
             renderTasks();
+            applySidebarState();
             
-            // Switch to Dashboard View
             document.getElementById('setupSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
         }
@@ -282,7 +303,6 @@
             document.getElementById('dashAmbition').innerText = state.ambition;
             updateSidebarIcon(state.role);
             
-            // Switch Views
             document.getElementById('setupSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.remove('hidden');
             
