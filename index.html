@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemify | Ambition Vault</title>
+    <title>Gemify | AI Evolution Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -45,6 +45,10 @@
         #rankGuidePopover.active { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
         
         .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Loading Animation */
+        .ai-loading { animation: pulse-bg 1.5s infinite; }
+        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
@@ -62,7 +66,7 @@
             </svg>
         </div>
         <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
-            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Ambition Pilot</h2>
+            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">AI Evolution Engine</h2>
             <h1 class="text-7xl md:text-9xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
             <p class="text-xl md:text-2xl font-light text-slate-500">Discover. Define. Dominate.</p>
             <button onclick="enterSystem()" class="px-12 py-5 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl flex items-center gap-3 mx-auto md:mx-0">
@@ -163,7 +167,7 @@
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label>
                         <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
                     </div>
-                    <button onclick="startEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
+                    <button id="initBtn" onclick="startEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
                 </div>
             </div>
 
@@ -172,7 +176,7 @@
                 <div class="w-24 h-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-6 animate-bounce">
                     <i data-lucide="shield-check" class="w-12 h-12 text-purple-500"></i>
                 </div>
-                <h1 id="activeTitle" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase"></h1>
+                <h1 id="activeTitle" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-tight"></h1>
                 <p class="text-slate-500 max-w-md mx-auto">Evolution path is active. Complete tasks to increase your Rank.</p>
                 <button onclick="toggleModal(true)" class="px-10 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto">
                     VIEW QUEST LOG <i data-lucide="layout-list"></i>
@@ -194,6 +198,10 @@
     </main>
 
     <script>
+        // --- CONFIG ---
+        const GEMINI_API_KEY = "AIzaSyA8mX6kB65befKZiNvWYMA2aij3XcIMH5k";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
         let session = {
             playerName: "Player",
             playerRole: "Warrior",
@@ -208,15 +216,18 @@
             { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
         ];
 
+        // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             renderRankGuide();
-            const saved = localStorage.getItem('gemify_vault_v8');
+            const saved = localStorage.getItem('gemify_vault_v9');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     document.getElementById('heroPage').classList.add('hidden');
-                    document.getElementById('appPage').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                    const app = document.getElementById('appPage');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
                     renderVaults();
                     if (session.currentId) loadAmbition(session.currentId);
                 }
@@ -224,10 +235,11 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v8', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v9', JSON.stringify(session));
             updateGlobalXP();
         }
 
+        // --- NAVIGATION ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const app = document.getElementById('appPage');
@@ -251,17 +263,17 @@
 
         function resetSystem() {
             if (confirm("DANGER: This will permanently delete all ambitions and XP. Continue?")) {
-                localStorage.removeItem('gemify_vault_v8');
+                localStorage.removeItem('gemify_vault_v9');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition();
                 updateGlobalXP();
             }
         }
 
-        function toggleRankGuide() {
-            document.getElementById('rankGuidePopover').classList.toggle('active');
-        }
-
+        // --- UI HELPERS ---
+        function toggleRankGuide() { document.getElementById('rankGuidePopover').classList.toggle('active'); }
+        function toggleModal(show) { document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)'; }
+        
         function renderRankGuide() {
             const container = document.getElementById('rankGuideList');
             container.innerHTML = rankThresholds.map(r => `
@@ -294,63 +306,83 @@
             renderVaults();
         }
 
-        // --- DYNAMIC TASK ENGINE ---
-        function generateTasks(title, role) {
-            const isWarrior = role === 'Warrior';
-            return [
-                { 
-                    phase: "Phase I: Neural Mapping", 
-                    name: isWarrior ? `Strike at the core: Identify 3 critical barriers in ${title}` : `Decipher the logic: Map the fundamental principles of ${title}`, 
-                    xp: 40, completed: false, url: `https://www.youtube.com/results?search_query=${title}+fundamentals` 
-                },
-                { 
-                    phase: "Phase I: Neural Mapping", 
-                    name: isWarrior ? `Execute Blueprint: Set up a high-intensity 4-hour focus block` : `Synthesize Framework: Create a visual mental model of ${title} mastery`, 
-                    xp: 60, completed: false, url: `https://www.youtube.com/results?search_query=${title}+roadmap` 
-                },
-                { 
-                    phase: "Phase II: Core Execution", 
-                    name: isWarrior ? `The Grind: Complete 10 repetitions of a complex ${title} drill` : `The Deep Dive: Analyze 5 advanced case studies in ${title}`, 
-                    xp: 150, completed: false, url: `https://www.youtube.com/results?search_query=${title}+advanced+tutorial` 
-                },
-                { 
-                    phase: "Phase II: Core Execution", 
-                    name: isWarrior ? `Conquer the Plateau: Solve a problem in ${title} that previously defeated you` : `Synergize Knowledge: Apply a concept from another field to ${title}`, 
-                    xp: 250, completed: false, url: `https://www.youtube.com/results?search_query=${title}+problem+solving` 
-                },
-                { 
-                    phase: "Phase III: System Mastery", 
-                    name: isWarrior ? `Ascension: Teach a beginner the most difficult part of ${title}` : `The Grand Decipher: Write a detailed critique or guide on ${title}`, 
-                    xp: 500, completed: false, url: `https://www.youtube.com/results?search_query=${title}+masterclass` 
-                }
-            ];
+        // --- AI ENGINE ---
+        async function fetchGeminiTasks(title, role) {
+            const prompt = `
+                Act as the Gemify Evolution Engine. User Role: ${role}. Ultimate Ambition: "${title}".
+                This goal is currently "impossible" for the user. Break it down into 5 highly specific, actionable, and humanized tasks.
+                Structure:
+                - Phase I: Neural Mapping (2 tasks, foundational)
+                - Phase II: Core Execution (2 tasks, high intensity)
+                - Phase III: System Mastery (1 task, peak breakthrough)
+                
+                Tone: Hardcore, motivating, and specific to the ${role} role (Warrior: active/conquering, Mage: analytical/deciphering).
+                Return ONLY a JSON array of objects: [{"phase": "...", "name": "...", "xp": number(multiple of 5), "search": "youtube search term"}].
+                No markdown, no extra text.
+            `;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                return JSON.parse(cleanJson);
+            } catch (e) {
+                console.error("AI Error:", e);
+                return null;
+            }
         }
 
         async function startEvolution() {
             const name = document.getElementById('inputName').value.trim();
             const title = document.getElementById('inputAmbition').value.trim();
-            if (!title) return alert("Please state your ambition.");
+            const btn = document.getElementById('initBtn');
 
+            if (!title) return alert("Please state your ambition.");
             if (name) session.playerName = name;
-            const id = Date.now();
+
+            // UI Loading State
+            btn.disabled = true;
+            btn.innerText = "AI ANALYZING AMBITION...";
+            btn.classList.add('ai-loading');
             
+            toggleModal(true);
+            await runLogs(title);
+
+            const aiTasks = await fetchGeminiTasks(title, session.playerRole);
+            
+            if (!aiTasks) {
+                alert("AI Link Failed. Check connection or API Key.");
+                btn.disabled = false;
+                btn.innerText = "INITIALIZE EVOLUTION";
+                btn.classList.remove('ai-loading');
+                return;
+            }
+
+            const id = Date.now();
             const newAmbition = {
                 id: id,
                 title: title,
                 role: session.playerRole,
-                tasks: generateTasks(title, session.playerRole)
+                tasks: aiTasks.map(t => ({...t, completed: false}))
             };
 
             session.ambitionVault.unshift(newAmbition);
             session.currentId = id;
             
+            // Finalize UI
+            btn.disabled = false;
+            btn.innerText = "INITIALIZE EVOLUTION";
+            btn.classList.remove('ai-loading');
+            
             document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            
-            toggleModal(true);
-            await runLogs(title);
             
             renderTasks(newAmbition);
             renderVaults();
@@ -372,10 +404,11 @@
                 p.innerText = `> ${log}`;
                 container.appendChild(p);
                 container.scrollTop = container.scrollHeight;
-                await new Promise(r => setTimeout(r, 700));
+                await new Promise(r => setTimeout(r, 600));
             }
         }
 
+        // --- RENDERERS ---
         function loadAmbition(id) {
             session.currentId = id;
             const data = session.ambitionVault.find(a => a.id === id) || session.archivedVault.find(a => a.id === id);
@@ -458,7 +491,7 @@
                     <div class="flex-1">
                         <span class="task-phase-tag ${task.completed ? 'bg-slate-200 text-slate-400' : 'bg-purple-100 text-purple-500'} mb-2 inline-block">${task.phase}</span>
                         <p class="text-sm font-bold text-slate-700 leading-snug">${task.name}</p>
-                        <a href="${task.url}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-2">
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-2">
                             <i data-lucide="external-link" class="w-3 h-3"></i> Learning Node
                         </a>
                     </div>
@@ -489,9 +522,12 @@
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
         }
 
-        function toggleModal(show) {
-            document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)';
-        }
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !session.currentId) {
+                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
+                else startEvolution();
+            }
+        });
     </script>
 </body>
 </html>
