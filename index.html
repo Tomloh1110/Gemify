@@ -133,20 +133,19 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v11');
+            const saved = localStorage.getItem('gemify_final_v12');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     document.getElementById('heroPage').classList.add('hidden');
                     const app = document.getElementById('appPage');
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                     renderVaults(); if (session.currentId) loadAmbition(session.currentId);
                 }
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v11', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v12', JSON.stringify(session)); updateGlobalXP(); }
 
         function enterSystem() {
             const hero = document.getElementById('heroPage');
@@ -165,14 +164,13 @@
             app.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
                 app.classList.add('hidden');
-                hero.classList.remove('hidden');
-                setTimeout(() => hero.classList.remove('hidden-state'), 50);
+                hero.classList.remove('hidden', 'hidden-state');
             }, 600);
         }
 
         function resetSystem() {
             if (confirm("DANGER: Delete all progress?")) {
-                localStorage.removeItem('gemify_final_v11');
+                localStorage.removeItem('gemify_final_v12');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition(); updateGlobalXP();
             }
@@ -207,18 +205,18 @@
             toggleModal(false); renderVaults();
         }
 
-        // --- AI ENGINE (OPTIMIZED) ---
+        // --- AI ENGINE (DIAGNOSTIC MODE) ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `
-                You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}.
-                This is an extremely difficult goal. Break it down into 5 HIGHLY SPECIFIC, humanized tasks.
+                You are a world-class expert mentor. A user wants to master "${title}" as a ${role}.
+                Break this impossible goal into 5 BRUTAL, HIGHLY TECHNICAL, and SPECIFIC tasks.
                 
-                CRITICAL RULES:
-                1. DO NOT use generic phrases like "Analyze core pillars", "Identify barriers", or "Practice basics".
-                2. USE terminology specific to "${title}". (e.g., if Cubing, mention F2L, OLL, or finger tricks. if Flowerist, mention floral foam, color theory, or hydration).
+                RULES:
+                1. DO NOT use generic words like "Analyze", "Identify", "Practice", or "Mastery".
+                2. USE specific terminology for "${title}". (e.g. if Cubing: mention F2L algorithms, finger tricks, or cross-efficiency. if Flowerist: mention spiral technique, hydration protocols, or color harmony).
                 3. Phase I: Cognitive Foundation (2 tasks).
                 4. Phase II: Intense Practical Application (2 tasks).
-                5. Phase III: Mastery Breakthrough (1 task).
+                5. Phase III: System Mastery (1 task).
                 
                 Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].
             `;
@@ -228,21 +226,27 @@
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                if (!response.ok) throw new Error("API_OFFLINE");
+                
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(`API_ERROR: ${err.error.message}`);
+                }
+
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
                 const tasks = JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
-                window.lastEngine = "AI_ENGINE";
+                window.lastEngine = "GEMINI_AI_CONNECTED";
                 return tasks;
             } catch (e) {
-                console.warn("AI Failed, using Fallback Engine.");
-                window.lastEngine = "FALLBACK_PROTOCOL";
+                console.error("AI Diagnostic:", e.message);
+                window.lastEngine = `FALLBACK_PROTOCOL (Reason: ${e.message})`;
+                // 备用逻辑：虽然是备用，但也尝试加入一点动态感
                 return [
-                    { phase: "Phase I: Neural Mapping", name: `Deconstruct the specific technical requirements of ${title}`, xp: 40, search: `${title} technical guide` },
-                    { phase: "Phase I: Neural Mapping", name: `Identify the top 3 industry-standard tools for ${title}`, xp: 60, search: `${title} professional tools` },
-                    { phase: "Phase II: Core Execution", name: `Complete a 4-hour high-intensity practical project in ${title}`, xp: 150, search: `${title} advanced project` },
-                    { phase: "Phase II: Core Execution", name: `Solve a real-world bottleneck specific to ${title} mastery`, xp: 250, search: `${title} troubleshooting` },
-                    { phase: "Phase III: System Mastery", name: `Produce a master-level output that demonstrates ${title} proficiency`, xp: 500, search: `${title} expert showcase` }
+                    { phase: "Phase I: Neural Mapping", name: `Deconstruct the technical architecture of ${title}`, xp: 40, search: `${title} technicals` },
+                    { phase: "Phase I: Neural Mapping", name: `Map the 3 most difficult bottlenecks in ${title}`, xp: 60, search: `${title} mastery` },
+                    { phase: "Phase II: Core Execution", name: `Execute a 4-hour high-intensity practical drill in ${title}`, xp: 150, search: `${title} advanced drills` },
+                    { phase: "Phase II: Core Execution", name: `Solve a real-world complex challenge in ${title}`, xp: 250, search: `${title} expert problems` },
+                    { phase: "Phase III: System Mastery", name: `Achieve a breakthrough milestone in ${title} proficiency`, xp: 500, search: `${title} masterclass` }
                 ];
             }
         }
@@ -277,7 +281,7 @@
 
         async function runLogs(title, engine) {
             const logs = [
-                `[Engine: ${engine} Connected]`,
+                `[Engine: ${engine}]`,
                 `[Analyzing "${title}" context...]`,
                 `[Deconstructing mastery nodes...]`,
                 `[Evolution Path Ready.]` 
