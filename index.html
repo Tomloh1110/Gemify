@@ -1,112 +1,345 @@
-// --- 核心配置 ---
-const GEMINI_API_KEY = "AIzaSyA8mX6kB65befKZiNvWYMA2aij3XcIMH5k"; 
-const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemify | AI Evolution Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --lilac: #F3F1FF; --pastel-purple: #B39DDB; --deep-purple: #7E57C2; --glass: rgba(255, 255, 255, 0.75); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%); color: #2D3748; overflow: hidden; height: 100vh; }
+        .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        .tree-node { animation: pulse 3s infinite ease-in-out; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
+        .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
+        .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
+        .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
+        .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
+        .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
+        .sidebar-item { transition: all 0.2s ease; cursor: pointer; border: 1px solid transparent; }
+        .sidebar-item:hover { background: rgba(179, 157, 219, 0.15); }
+        .sidebar-item.active { background: white; border: 1px solid var(--pastel-purple); box-shadow: 0 4px 12px rgba(179, 157, 219, 0.05); }
+        .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        #rankGuidePopover { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: scale(0.9) translateY(-10px); opacity: 0; pointer-events: none; }
+        #rankGuidePopover.active { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+        .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .ai-loading { animation: pulse-bg 1.5s infinite; }
+        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
 
-// --- 增强版 AI 任务生成引擎 ---
-async function fetchGeminiTasks(title, role) {
-    const prompt = `
-        Act as the Gemify Evolution Engine. User Role: ${role}. Ultimate Ambition: "${title}".
-        Break this down into 5 specific, actionable tasks.
-        Structure:
-        - Phase I: Neural Mapping (2 tasks)
-        - Phase II: Core Execution (2 tasks)
-        - Phase III: System Mastery (1 task)
-        Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].
-    `;
+    <!-- PAGE 1: HERO SECTION -->
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#FDFCFE] portal-transition">
+        <div class="w-full md:w-1/2 flex justify-center items-center">
+            <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
+                <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" class="branch" />
+                <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
+                <path d="M200 300 Q300 250 320 150" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 1s" />
+                <circle cx="80" cy="200" r="5" fill="#7E57C2" class="tree-node" />
+                <circle cx="320" cy="150" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 0.7s" />
+                <circle cx="200" cy="50" r="5" fill="#7E57C2" class="tree-node" style="animation-delay: 1.4s" />
+            </svg>
+        </div>
+        <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
+            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">AI Evolution Engine</h2>
+            <h1 class="text-7xl md:text-9xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
+            <p class="text-xl md:text-2xl font-light text-slate-500">Discover. Define. Dominate.</p>
+            <button onclick="enterSystem()" class="px-12 py-5 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl flex items-center gap-3 mx-auto md:mx-0">
+                ENTER THE SYSTEM <i data-lucide="zap"></i>
+            </button>
+        </div>
+    </section>
 
-    try {
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topK: 40,
-                    topP: 0.95,
-                    maxOutputTokens: 1024,
+    <!-- PAGE 2: MAIN APP -->
+    <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition">
+        <aside class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50 relative">
+            <div class="mb-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div id="sidebarIcon" class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
+                        <div>
+                            <h3 id="statName" class="font-bold text-slate-800 text-sm">Player</h3>
+                            <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleRankGuide()" class="p-2 bg-white border border-purple-100 rounded-lg hover:bg-purple-50 transition-all shadow-sm">
+                        <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Ranks</span>
+                    </button>
+                </div>
+                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] border border-white">
+                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Rank Progression</h4>
+                    <div id="rankGuideList" class="space-y-2"></div>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase"><span>Global XP</span><span id="xpText">0/100</span></div>
+                    <div class="w-full h-2 bg-white/50 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div></div>
+                </div>
+            </div>
+            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
+            <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
+                <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
+                <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Archived Ambition</h4><div id="archivedList" class="space-y-2 opacity-60"></div></div>
+            </div>
+            <div class="mt-auto pt-6 border-t border-purple-100 space-y-2">
+                <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-all"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</button>
+                <button onclick="resetSystem()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> Reset System</button>
+            </div>
+        </aside>
+
+        <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
+            <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
+                <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Initialize Evolution</h2><p class="text-slate-500 text-sm">Define your parameters for the system.</p></div>
+                <div class="space-y-6">
+                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label><input type="text" id="inputName" placeholder="Enter name..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400"></div>
+                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-6 rounded-3xl glass flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><i data-lucide="sword"></i></div><span class="text-xs font-bold uppercase tracking-widest">Warrior</span></div>
+                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-6 rounded-3xl glass flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><i data-lucide="wand-2"></i></div><span class="text-xs font-bold uppercase tracking-widest">Mage</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Core Ambition</label><input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400"></div>
+                    <button id="initBtn" onclick="startEvolution()" class="w-full py-5 bg-slate-900 text-white font-black rounded-2xl shadow-xl hover:bg-purple-600 transition-all">INITIALIZE EVOLUTION</button>
+                </div>
+            </div>
+            <div id="dashboard" class="hidden text-center space-y-6">
+                <div class="w-24 h-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-6 animate-bounce"><i data-lucide="shield-check" class="w-12 h-12 text-purple-500"></i></div>
+                <h1 id="activeTitle" class="text-5xl md:text-6xl font-black text-slate-900 tracking-tighter uppercase leading-tight"></h1>
+                <p class="text-slate-500 max-w-md mx-auto">Evolution path is active. Complete tasks to increase your Rank.</p>
+                <button onclick="toggleModal(true)" class="px-10 py-4 bg-white text-slate-900 font-bold rounded-full shadow-lg hover:shadow-2xl transition-all flex items-center gap-3 mx-auto">VIEW QUEST LOG <i data-lucide="layout-list"></i></button>
+            </div>
+        </section>
+
+        <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-purple-100 flex justify-between items-center"><h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button></div>
+            <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"><p>[System: Awaiting Input...]</p></div>
+            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
+        </aside>
+    </main>
+
+    <script>
+        const GEMINI_API_KEY = "AIzaSyA8mX6kB65befKZiNvWYMA2aij3XcIMH5k";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+        let session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+        const rankThresholds = [
+            { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 }, { rank: 'B', xp: 600 },
+            { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons(); renderRankGuide();
+            const saved = localStorage.getItem('gemify_final_v10');
+            if (saved) {
+                session = JSON.parse(saved);
+                if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
+                    document.getElementById('heroPage').classList.add('hidden');
+                    const app = document.getElementById('appPage');
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    renderVaults(); if (session.currentId) loadAmbition(session.currentId);
                 }
-            })
+            }
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error("Gemini API Error Details:", errorData);
-            // 弹出具体错误原因
-            throw new Error(`API Error ${response.status}: ${errorData.error.message}`);
+        function save() { localStorage.setItem('gemify_final_v10', JSON.stringify(session)); updateGlobalXP(); }
+
+        function enterSystem() {
+            const hero = document.getElementById('heroPage');
+            const app = document.getElementById('appPage');
+            hero.classList.add('hidden-state');
+            setTimeout(() => {
+                hero.classList.add('hidden');
+                app.classList.remove('hidden');
+                setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+            }, 600);
         }
 
-        const data = await response.json();
-        if (!data.candidates || data.candidates.length === 0) {
-            throw new Error("Safety Filter Triggered: AI refused to generate this content.");
+        function logout() {
+            const hero = document.getElementById('heroPage');
+            const app = document.getElementById('appPage');
+            app.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                app.classList.add('hidden');
+                hero.classList.remove('hidden');
+                setTimeout(() => hero.classList.remove('hidden-state'), 50);
+            }, 600);
         }
 
-        const text = data.candidates[0].content.parts[0].text;
-        const cleanJson = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanJson);
+        function resetSystem() {
+            if (confirm("DANGER: Delete all progress?")) {
+                localStorage.removeItem('gemify_final_v10');
+                session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+                createNewAmbition(); updateGlobalXP();
+            }
+        }
 
-    } catch (e) {
-        console.error("System Diagnostic:", e);
-        alert(`[System Diagnostic] ${e.message}`); // 这里会显示具体的报错信息
-        return null;
-    }
-}
+        function toggleRankGuide() { document.getElementById('rankGuidePopover').classList.toggle('active'); }
+        function toggleModal(show) { document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)'; }
+        function renderRankGuide() {
+            document.getElementById('rankGuideList').innerHTML = rankThresholds.map(r => `
+                <div class="flex justify-between text-[11px] p-2 rounded-xl bg-white/50 border border-purple-50">
+                    <span class="font-bold text-slate-700">${r.rank} Rank</span><span class="font-black text-purple-500">${r.xp} XP</span>
+                </div>`).reverse().join('');
+        }
 
-// --- 修改后的启动函数 (确保 UI 状态正确切换) ---
-async function startEvolution() {
-    const nameInput = document.getElementById('inputName');
-    const ambitionInput = document.getElementById('inputAmbition');
-    const btn = document.getElementById('initBtn');
+        function selectRole(role) {
+            session.playerRole = role;
+            document.getElementById('role-Warrior').classList.toggle('active', role === 'Warrior');
+            document.getElementById('role-Mage').classList.toggle('active', role === 'Mage');
+            updateSidebarIcon(role);
+        }
 
-    const name = nameInput.value.trim();
-    const title = ambitionInput.value.trim();
+        function updateSidebarIcon(role) {
+            document.getElementById('sidebarIcon').innerHTML = `<i data-lucide="${role === 'Warrior' ? 'sword' : 'wand-2'}"></i>`;
+            lucide.createIcons();
+        }
 
-    if (!title) return alert("Please state your ambition.");
-    if (name) session.playerName = name;
+        function createNewAmbition() {
+            session.currentId = null;
+            document.getElementById('setupForm').classList.remove('hidden');
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('inputAmbition').value = '';
+            toggleModal(false); renderVaults();
+        }
 
-    // UI 锁定状态
-    btn.disabled = true;
-    btn.innerText = "SYNCING WITH GEMINI AI...";
-    btn.classList.add('ai-loading');
-    
-    // 预先打开日志窗口
-    toggleModal(true);
-    await runLogs(title);
+        // --- AI & FALLBACK ENGINE ---
+        async function fetchGeminiTasks(title, role) {
+            const prompt = `Act as Gemify Evolution Engine. Role: ${role}. Ambition: "${title}". Break into 5 hard but actionable tasks. Phase I (2), Phase II (2), Phase III (1). Return ONLY JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}]`;
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                if (!response.ok) throw new Error("API Error");
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
+                return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
+            } catch (e) {
+                console.warn("AI Failed, using Fallback Engine.");
+                return [
+                    { phase: "Phase I: Neural Mapping", name: `Analyze the core pillars of ${title}`, xp: 40, search: `${title} basics` },
+                    { phase: "Phase I: Neural Mapping", name: `Identify 3 critical barriers in ${title} mastery`, xp: 60, search: `${title} roadmap` },
+                    { phase: "Phase II: Core Execution", name: `Execute a 4-hour deep focus session on ${title}`, xp: 150, search: `${title} practice` },
+                    { phase: "Phase II: Core Execution", name: `Solve a complex challenge within ${title}`, xp: 250, search: `${title} advanced` },
+                    { phase: "Phase III: System Mastery", name: `Achieve a breakthrough milestone in ${title}`, xp: 500, search: `${title} masterclass` }
+                ];
+            }
+        }
 
-    const aiTasks = await fetchGeminiTasks(title, session.playerRole);
-    
-    if (!aiTasks) {
-        // 失败处理：恢复按钮状态
-        btn.disabled = false;
-        btn.innerText = "INITIALIZE EVOLUTION";
-        btn.classList.remove('ai-loading');
-        return;
-    }
+        async function startEvolution() {
+            const name = document.getElementById('inputName').value.trim();
+            const title = document.getElementById('inputAmbition').value.trim();
+            const btn = document.getElementById('initBtn');
+            if (!title) return alert("State your ambition.");
+            if (name) session.playerName = name;
 
-    // 成功处理
-    const id = Date.now();
-    const newAmbition = {
-        id: id,
-        title: title,
-        role: session.playerRole,
-        tasks: aiTasks.map(t => ({...t, completed: false}))
-    };
+            btn.disabled = true; btn.innerText = "EVOLVING..."; btn.classList.add('ai-loading');
+            toggleModal(true); await runLogs(title);
 
-    session.ambitionVault.unshift(newAmbition);
-    session.currentId = id;
-    
-    // 切换到 Dashboard
-    document.getElementById('statName').innerText = session.playerName;
-    document.getElementById('activeTitle').innerText = title;
-    document.getElementById('setupForm').classList.add('hidden');
-    document.getElementById('dashboard').classList.remove('hidden');
-    
-    renderTasks(newAmbition);
-    renderVaults();
-    save();
+            const tasks = await fetchGeminiTasks(title, session.playerRole);
+            const id = Date.now();
+            session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
+            session.currentId = id;
 
-    // 恢复按钮
-    btn.disabled = false;
-    btn.innerText = "INITIALIZE EVOLUTION";
-    btn.classList.remove('ai-loading');
-}
+            btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
+            document.getElementById('statName').innerText = session.playerName;
+            document.getElementById('activeTitle').innerText = title;
+            document.getElementById('setupForm').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            renderTasks(session.ambitionVault[0]); renderVaults(); save();
+        }
+
+        async function runLogs(title) {
+            const logs = [`[Initializing Neural Link...]`, `[Analyzing "${title}"...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
+            const container = document.getElementById('logContainer'); container.innerHTML = '';
+            for (const log of logs) {
+                const p = document.createElement('p'); p.innerText = `> ${log}`;
+                container.appendChild(p); container.scrollTop = container.scrollHeight;
+                await new Promise(r => setTimeout(r, 600));
+            }
+        }
+
+        function loadAmbition(id) {
+            session.currentId = id;
+            const data = session.ambitionVault.find(a => a.id === id) || session.archivedVault.find(a => a.id === id);
+            document.getElementById('statName').innerText = session.playerName;
+            document.getElementById('activeTitle').innerText = data.title;
+            document.getElementById('setupForm').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            updateSidebarIcon(data.role); renderTasks(data); renderVaults(); save();
+        }
+
+        function archiveAmbition(e, id) {
+            e.stopPropagation();
+            const idx = session.ambitionVault.findIndex(a => a.id === id);
+            session.archivedVault.unshift(session.ambitionVault.splice(idx, 1)[0]);
+            if (session.currentId === id) createNewAmbition();
+            renderVaults(); save();
+        }
+
+        function unarchiveAmbition(e, id) {
+            e.stopPropagation();
+            const idx = session.archivedVault.findIndex(a => a.id === id);
+            session.ambitionVault.unshift(session.archivedVault.splice(idx, 1)[0]);
+            renderVaults(); save();
+        }
+
+        function renderVaults() {
+            const activeList = document.getElementById('vaultList');
+            const archivedList = document.getElementById('archivedList');
+            activeList.innerHTML = ''; archivedList.innerHTML = '';
+            session.ambitionVault.forEach(a => {
+                const div = document.createElement('div');
+                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
+                div.onclick = () => loadAmbition(a.id);
+                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-100 rounded-lg transition-all"><i data-lucide="archive" class="w-4 h-4 text-slate-400"></i></button>`;
+                activeList.appendChild(div);
+            });
+            session.archivedVault.forEach(a => {
+                const div = document.createElement('div');
+                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
+                div.onclick = () => loadAmbition(a.id);
+                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="package" class="w-4 h-4 text-slate-400"></i><span class="truncate">${a.title}</span></div><button onclick="unarchiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-100 rounded-lg transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i></button>`;
+                archivedList.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function renderTasks(ambition) {
+            const container = document.getElementById('taskContainer'); container.innerHTML = '';
+            ambition.tasks.forEach((task, index) => {
+                const div = document.createElement('div');
+                div.className = "p-5 rounded-[1.5rem] bg-white/60 border border-purple-50 flex items-start gap-4 shadow-sm";
+                div.innerHTML = `
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-purple-200 text-purple-600">
+                    <div class="flex-1">
+                        <span class="task-phase-tag ${task.completed ? 'bg-slate-200 text-slate-400' : 'bg-purple-100 text-purple-500'} mb-2 inline-block">${task.phase}</span>
+                        <p class="text-sm font-bold text-slate-700 leading-snug">${task.name}</p>
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-2"><i data-lucide="external-link" class="w-3 h-3"></i> Learning Node</a>
+                    </div><span class="text-[10px] font-black text-slate-400">+${task.xp}XP</span>`;
+                container.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function toggleTask(index) {
+            const ambition = session.ambitionVault.find(a => a.id === session.currentId) || session.archivedVault.find(a => a.id === session.currentId);
+            ambition.tasks[index].completed = !ambition.tasks[index].completed; save();
+        }
+
+        function updateGlobalXP() {
+            let total = 0; [...session.ambitionVault, ...session.archivedVault].forEach(a => a.tasks.forEach(t => { if (t.completed) total += t.xp; }));
+            let rankIdx = 0; rankThresholds.forEach((r, i) => { if (total >= r.xp) rankIdx = i; });
+            const currentRank = rankThresholds[rankIdx]; const next = rankThresholds[rankIdx + 1] || {xp: 3000};
+            document.getElementById('xpText').innerText = `${total}/${next.xp}`;
+            document.getElementById('xpBar').style.width = `${Math.min((total / next.xp) * 100, 100)}%`;
+            document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
+        }
+    </script>
+</body>
+</html>
