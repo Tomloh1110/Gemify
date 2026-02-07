@@ -41,9 +41,10 @@
         .system-log-glass { background: rgba(179, 157, 219, 0.1); border: 1px solid var(--pastel-purple); color: var(--deep-purple); font-family: 'Fira Code', monospace; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        /* Rank Popover */
         #rankGuidePopover { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); transform: scale(0.9) translateY(-10px); opacity: 0; pointer-events: none; }
         #rankGuidePopover.active { transform: scale(1) translateY(0); opacity: 1; pointer-events: auto; }
+        
+        .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
     </style>
 </head>
 <body>
@@ -75,7 +76,6 @@
         
         <!-- SIDEBAR -->
         <aside class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50 relative">
-            <!-- Stats -->
             <div class="mb-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
@@ -92,7 +92,6 @@
                     </button>
                 </div>
 
-                <!-- Rank Guide Popover -->
                 <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] border border-white">
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Rank Progression</h4>
                     <div id="rankGuideList" class="space-y-2"></div>
@@ -113,7 +112,6 @@
                 <i data-lucide="plus" class="w-4 h-4"></i> New Ambition
             </button>
 
-            <!-- Vaults -->
             <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
                 <div>
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4>
@@ -125,7 +123,6 @@
                 </div>
             </div>
 
-            <!-- BOTTOM ACTIONS -->
             <div class="mt-auto pt-6 border-t border-purple-100 space-y-2">
                 <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-all">
                     <i data-lucide="log-out" class="w-4 h-4"></i> Logout
@@ -214,14 +211,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             renderRankGuide();
-            const saved = localStorage.getItem('gemify_vault_v7');
+            const saved = localStorage.getItem('gemify_vault_v8');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
-                    const hero = document.getElementById('heroPage');
-                    const app = document.getElementById('appPage');
-                    hero.classList.add('hidden');
-                    app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                    document.getElementById('heroPage').classList.add('hidden');
+                    document.getElementById('appPage').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                     renderVaults();
                     if (session.currentId) loadAmbition(session.currentId);
                 }
@@ -229,7 +224,7 @@
         });
 
         function save() {
-            localStorage.setItem('gemify_vault_v7', JSON.stringify(session));
+            localStorage.setItem('gemify_vault_v8', JSON.stringify(session));
             updateGlobalXP();
         }
 
@@ -240,9 +235,7 @@
             setTimeout(() => {
                 hero.classList.add('hidden');
                 app.classList.remove('hidden');
-                setTimeout(() => {
-                    app.classList.remove('opacity-0', 'pointer-events-none');
-                }, 50);
+                setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
             }, 600);
         }
 
@@ -252,16 +245,13 @@
             app.classList.add('opacity-0', 'pointer-events-none');
             setTimeout(() => {
                 app.classList.add('hidden');
-                hero.classList.remove('hidden');
-                setTimeout(() => {
-                    hero.classList.remove('hidden-state');
-                }, 50);
+                hero.classList.remove('hidden', 'hidden-state');
             }, 600);
         }
 
         function resetSystem() {
             if (confirm("DANGER: This will permanently delete all ambitions and XP. Continue?")) {
-                localStorage.removeItem('gemify_vault_v7');
+                localStorage.removeItem('gemify_vault_v8');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition();
                 updateGlobalXP();
@@ -304,6 +294,38 @@
             renderVaults();
         }
 
+        // --- DYNAMIC TASK ENGINE ---
+        function generateTasks(title, role) {
+            const isWarrior = role === 'Warrior';
+            return [
+                { 
+                    phase: "Phase I: Neural Mapping", 
+                    name: isWarrior ? `Strike at the core: Identify 3 critical barriers in ${title}` : `Decipher the logic: Map the fundamental principles of ${title}`, 
+                    xp: 40, completed: false, url: `https://www.youtube.com/results?search_query=${title}+fundamentals` 
+                },
+                { 
+                    phase: "Phase I: Neural Mapping", 
+                    name: isWarrior ? `Execute Blueprint: Set up a high-intensity 4-hour focus block` : `Synthesize Framework: Create a visual mental model of ${title} mastery`, 
+                    xp: 60, completed: false, url: `https://www.youtube.com/results?search_query=${title}+roadmap` 
+                },
+                { 
+                    phase: "Phase II: Core Execution", 
+                    name: isWarrior ? `The Grind: Complete 10 repetitions of a complex ${title} drill` : `The Deep Dive: Analyze 5 advanced case studies in ${title}`, 
+                    xp: 150, completed: false, url: `https://www.youtube.com/results?search_query=${title}+advanced+tutorial` 
+                },
+                { 
+                    phase: "Phase II: Core Execution", 
+                    name: isWarrior ? `Conquer the Plateau: Solve a problem in ${title} that previously defeated you` : `Synergize Knowledge: Apply a concept from another field to ${title}`, 
+                    xp: 250, completed: false, url: `https://www.youtube.com/results?search_query=${title}+problem+solving` 
+                },
+                { 
+                    phase: "Phase III: System Mastery", 
+                    name: isWarrior ? `Ascension: Teach a beginner the most difficult part of ${title}` : `The Grand Decipher: Write a detailed critique or guide on ${title}`, 
+                    xp: 500, completed: false, url: `https://www.youtube.com/results?search_query=${title}+masterclass` 
+                }
+            ];
+        }
+
         async function startEvolution() {
             const name = document.getElementById('inputName').value.trim();
             const title = document.getElementById('inputAmbition').value.trim();
@@ -316,11 +338,7 @@
                 id: id,
                 title: title,
                 role: session.playerRole,
-                tasks: [
-                    { name: `Analyze core pillars of ${title}`, xp: 25, completed: false, url: `https://www.youtube.com/results?search_query=${title}+basics` },
-                    { name: `Execute 1st deliberate practice`, xp: 20, completed: false, url: `https://www.youtube.com/results?search_query=${title}+tutorial` },
-                    { name: `Decipher advanced strategies`, xp: 30, completed: false, url: `https://www.youtube.com/results?search_query=${title}+advanced` }
-                ]
+                tasks: generateTasks(title, session.playerRole)
             };
 
             session.ambitionVault.unshift(newAmbition);
@@ -340,7 +358,13 @@
         }
 
         async function runLogs(title) {
-            const logs = [`[Gemify: Scanning Potential...]`, `[System: Mapping "${title}"...]`, `[System: Evolution Path Ready.]` ];
+            const logs = [
+                `[Gemify: Initializing Neural Link...]`,
+                `[System: Analyzing industry barriers for "${title}"...]`,
+                `[System: Deconstructing complex mastery into actionable nodes...]`,
+                `[System: Optimizing for ${session.playerRole} progression path...]`,
+                `[System: Evolution Path Ready. Proceed with caution.]`
+            ];
             const container = document.getElementById('logContainer');
             container.innerHTML = '';
             for (const log of logs) {
@@ -348,7 +372,7 @@
                 p.innerText = `> ${log}`;
                 container.appendChild(p);
                 container.scrollTop = container.scrollHeight;
-                await new Promise(r => setTimeout(r, 600));
+                await new Promise(r => setTimeout(r, 700));
             }
         }
 
@@ -387,8 +411,7 @@
         function renderVaults() {
             const activeList = document.getElementById('vaultList');
             const archivedList = document.getElementById('archivedList');
-            activeList.innerHTML = '';
-            archivedList.innerHTML = '';
+            activeList.innerHTML = ''; archivedList.innerHTML = '';
 
             session.ambitionVault.forEach(ambition => {
                 const div = document.createElement('div');
@@ -426,16 +449,17 @@
 
         function renderTasks(ambition) {
             const container = document.getElementById('taskContainer');
-            container.innerHTML = `<h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-2">Stage 1: Awakening</h4>`;
+            container.innerHTML = '';
             ambition.tasks.forEach((task, index) => {
                 const div = document.createElement('div');
                 div.className = "p-5 rounded-[1.5rem] bg-white/60 border border-purple-50 flex items-start gap-4 shadow-sm";
                 div.innerHTML = `
                     <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-purple-200 text-purple-600">
                     <div class="flex-1">
-                        <p class="text-sm font-bold text-slate-700">${task.name}</p>
-                        <a href="${task.url}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-1">
-                            <i data-lucide="external-link" class="w-3 h-3"></i> Resource
+                        <span class="task-phase-tag ${task.completed ? 'bg-slate-200 text-slate-400' : 'bg-purple-100 text-purple-500'} mb-2 inline-block">${task.phase}</span>
+                        <p class="text-sm font-bold text-slate-700 leading-snug">${task.name}</p>
+                        <a href="${task.url}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:underline flex items-center gap-1 mt-2">
+                            <i data-lucide="external-link" class="w-3 h-3"></i> Learning Node
                         </a>
                     </div>
                     <span class="text-[10px] font-black text-slate-400">+${task.xp}XP</span>
