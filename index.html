@@ -133,7 +133,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v10');
+            const saved = localStorage.getItem('gemify_final_v11');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -146,7 +146,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v10', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v11', JSON.stringify(session)); updateGlobalXP(); }
 
         function enterSystem() {
             const hero = document.getElementById('heroPage');
@@ -172,7 +172,7 @@
 
         function resetSystem() {
             if (confirm("DANGER: Delete all progress?")) {
-                localStorage.removeItem('gemify_final_v10');
+                localStorage.removeItem('gemify_final_v11');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition(); updateGlobalXP();
             }
@@ -207,26 +207,42 @@
             toggleModal(false); renderVaults();
         }
 
-        // --- AI & FALLBACK ENGINE ---
+        // --- AI ENGINE (OPTIMIZED) ---
         async function fetchGeminiTasks(title, role) {
-            const prompt = `Act as Gemify Evolution Engine. Role: ${role}. Ambition: "${title}". Break into 5 hard but actionable tasks. Phase I (2), Phase II (2), Phase III (1). Return ONLY JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}]`;
+            const prompt = `
+                You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}.
+                This is an extremely difficult goal. Break it down into 5 HIGHLY SPECIFIC, humanized tasks.
+                
+                CRITICAL RULES:
+                1. DO NOT use generic phrases like "Analyze core pillars", "Identify barriers", or "Practice basics".
+                2. USE terminology specific to "${title}". (e.g., if Cubing, mention F2L, OLL, or finger tricks. if Flowerist, mention floral foam, color theory, or hydration).
+                3. Phase I: Cognitive Foundation (2 tasks).
+                4. Phase II: Intense Practical Application (2 tasks).
+                5. Phase III: Mastery Breakthrough (1 task).
+                
+                Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].
+            `;
+
             try {
                 const response = await fetch(API_URL, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                if (!response.ok) throw new Error("API Error");
+                if (!response.ok) throw new Error("API_OFFLINE");
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
-                return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
+                const tasks = JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
+                window.lastEngine = "AI_ENGINE";
+                return tasks;
             } catch (e) {
                 console.warn("AI Failed, using Fallback Engine.");
+                window.lastEngine = "FALLBACK_PROTOCOL";
                 return [
-                    { phase: "Phase I: Neural Mapping", name: `Analyze the core pillars of ${title}`, xp: 40, search: `${title} basics` },
-                    { phase: "Phase I: Neural Mapping", name: `Identify 3 critical barriers in ${title} mastery`, xp: 60, search: `${title} roadmap` },
-                    { phase: "Phase II: Core Execution", name: `Execute a 4-hour deep focus session on ${title}`, xp: 150, search: `${title} practice` },
-                    { phase: "Phase II: Core Execution", name: `Solve a complex challenge within ${title}`, xp: 250, search: `${title} advanced` },
-                    { phase: "Phase III: System Mastery", name: `Achieve a breakthrough milestone in ${title}`, xp: 500, search: `${title} masterclass` }
+                    { phase: "Phase I: Neural Mapping", name: `Deconstruct the specific technical requirements of ${title}`, xp: 40, search: `${title} technical guide` },
+                    { phase: "Phase I: Neural Mapping", name: `Identify the top 3 industry-standard tools for ${title}`, xp: 60, search: `${title} professional tools` },
+                    { phase: "Phase II: Core Execution", name: `Complete a 4-hour high-intensity practical project in ${title}`, xp: 150, search: `${title} advanced project` },
+                    { phase: "Phase II: Core Execution", name: `Solve a real-world bottleneck specific to ${title} mastery`, xp: 250, search: `${title} troubleshooting` },
+                    { phase: "Phase III: System Mastery", name: `Produce a master-level output that demonstrates ${title} proficiency`, xp: 500, search: `${title} expert showcase` }
                 ];
             }
         }
@@ -238,13 +254,18 @@
             if (!title) return alert("State your ambition.");
             if (name) session.playerName = name;
 
-            btn.disabled = true; btn.innerText = "EVOLVING..."; btn.classList.add('ai-loading');
-            toggleModal(true); await runLogs(title);
+            btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
+            toggleModal(true); 
+            
+            const container = document.getElementById('logContainer');
+            container.innerHTML = `<p>> [Gemify: Initializing Neural Link...]</p>`;
 
             const tasks = await fetchGeminiTasks(title, session.playerRole);
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
             session.currentId = id;
+
+            await runLogs(title, window.lastEngine);
 
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
             document.getElementById('statName').innerText = session.playerName;
@@ -254,9 +275,14 @@
             renderTasks(session.ambitionVault[0]); renderVaults(); save();
         }
 
-        async function runLogs(title) {
-            const logs = [`[Initializing Neural Link...]`, `[Analyzing "${title}"...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
-            const container = document.getElementById('logContainer'); container.innerHTML = '';
+        async function runLogs(title, engine) {
+            const logs = [
+                `[Engine: ${engine} Connected]`,
+                `[Analyzing "${title}" context...]`,
+                `[Deconstructing mastery nodes...]`,
+                `[Evolution Path Ready.]` 
+            ];
+            const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
                 container.appendChild(p); container.scrollTop = container.scrollHeight;
