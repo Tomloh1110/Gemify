@@ -62,6 +62,22 @@
         </div>
     </section>
 
+    <!-- PAGE 1.5: NAME ENTRY SECTION -->
+    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] bg-[#FDFCFE] portal-transition hidden hidden-state">
+        <div class="max-w-md w-full text-center space-y-8">
+            <div class="w-20 h-20 bg-purple-100 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
+                <i data-lucide="fingerprint" class="text-purple-500 w-10 h-10"></i>
+            </div>
+            <h2 class="text-4xl font-black text-slate-900 tracking-tight">What's your name?</h2>
+            <div class="relative">
+                <input type="text" id="inputName" placeholder="Enter your identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white border-2 border-purple-50 outline-none focus:border-purple-400 transition-all shadow-xl">
+            </div>
+            <button onclick="proceedToAwakening()" class="px-10 py-4 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-lg">
+                AWAKEN IDENTITY
+            </button>
+        </div>
+    </section>
+
     <!-- PAGE 2: MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition">
         
@@ -105,10 +121,10 @@
         </aside>
 
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
+            <!-- SETUP FORM (精简版) -->
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
-                <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Initialize Evolution</h2><p class="text-slate-500 text-sm">AI-Powered Ambition Analysis</p></div>
+                <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Awakening System</h2><p class="text-slate-500 text-sm">Define your path and ambition</p></div>
                 <div class="space-y-6">
-                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label><input type="text" id="inputName" placeholder="Enter name..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400"></div>
                     <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
                         <div class="grid grid-cols-2 gap-4">
                             <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-6 rounded-3xl glass flex flex-col items-center gap-3"><div class="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center"><i data-lucide="sword"></i></div><span class="text-xs font-bold uppercase tracking-widest">Warrior</span></div>
@@ -127,7 +143,6 @@
             </div>
         </section>
 
-        <!-- RESULT MODAL -->
         <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center"><h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"><p>[System: Awaiting Input...]</p></div>
@@ -151,7 +166,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v17');
+            const saved = localStorage.getItem('gemify_final_v20');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -163,16 +178,35 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v17', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v20', JSON.stringify(session)); updateGlobalXP(); }
 
+        // --- NAVIGATION FLOW ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
-            const app = document.getElementById('appPage');
+            const nameEntry = document.getElementById('nameEntryPage');
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
+                nameEntry.classList.remove('hidden');
+                setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
+                document.getElementById('inputName').focus();
+            }, 600);
+        }
+
+        function proceedToAwakening() {
+            const name = document.getElementById('inputName').value.trim();
+            if (!name) return alert("Please state your identity.");
+            session.playerName = name;
+            
+            const nameEntry = document.getElementById('nameEntryPage');
+            const app = document.getElementById('appPage');
+            nameEntry.classList.add('hidden-state');
+            setTimeout(() => {
+                nameEntry.classList.add('hidden');
                 app.classList.remove('hidden');
                 setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                document.getElementById('statName').innerText = session.playerName;
+                document.getElementById('inputAmbition').focus();
             }, 600);
         }
 
@@ -188,9 +222,9 @@
 
         function resetSystem() {
             if (confirm("DANGER: Delete all progress?")) {
-                localStorage.removeItem('gemify_final_v17');
+                localStorage.removeItem('gemify_final_v20');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
-                createNewAmbition(); updateGlobalXP();
+                location.reload(); // 重启系统以回到初始状态
             }
         }
 
@@ -221,11 +255,8 @@
             document.getElementById('setupForm').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('inputAmbition').value = '';
-            
-            // --- NEW: Clear Modal when starting fresh ---
             document.getElementById('taskContainer').innerHTML = '';
             document.getElementById('logContainer').innerHTML = '<p>[System: Awaiting Input...]</p>';
-            
             toggleModal(false); renderVaults();
         }
 
@@ -254,14 +285,10 @@
         }
 
         async function startEvolution() {
-            const name = document.getElementById('inputName').value.trim();
             const title = document.getElementById('inputAmbition').value.trim();
             const btn = document.getElementById('initBtn');
-
             if (!title) return alert("State your ambition.");
-            if (name) session.playerName = name;
 
-            // --- NEW: Immediate UI Reset for New Ambition ---
             document.getElementById('taskContainer').innerHTML = '';
             document.getElementById('logContainer').innerHTML = `<p>> [Gemify: Resetting Neural Link...]</p>`;
 
@@ -276,7 +303,6 @@
             await runLogs(title, window.lastEngine);
 
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
-            document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
@@ -286,7 +312,6 @@
         async function runLogs(title, engine) {
             const logs = [`[Engine: ${engine}]`, `[Analyzing "${title}" context...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
-            // Clear the "Resetting" message before starting the real log
             container.innerHTML = '';
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
@@ -372,15 +397,24 @@
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
         }
 
-        // --- ENTER KEY OPTIMIZATION ---
+        // --- GLOBAL KEYBOARD LISTENER ---
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const heroPage = document.getElementById('heroPage');
+                const nameEntryPage = document.getElementById('nameEntryPage');
                 const setupForm = document.getElementById('setupForm');
                 const initBtn = document.getElementById('initBtn');
+
+                // 1. Hero -> Name Entry
                 if (!heroPage.classList.contains('hidden')) {
                     enterSystem();
-                } else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
+                } 
+                // 2. Name Entry -> Awakening
+                else if (!nameEntryPage.classList.contains('hidden')) {
+                    proceedToAwakening();
+                }
+                // 3. Awakening -> AI Evolution
+                else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
                     startEvolution();
                 }
             }
