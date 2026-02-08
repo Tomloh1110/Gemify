@@ -210,7 +210,7 @@
 
         // --- AI ENGINE (SECURE & DYNAMIC) ---
         async function fetchGeminiTasks(title, role, userKey) {
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userKey}`;
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${userKey}`;
             const prompt = `Act as Gemify Evolution Engine. Role: ${role}. Ambition: "${title}". Break into 5 hard but actionable tasks. Phase I (2), Phase II (2), Phase III (1). Return ONLY JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}]`;
             
             try {
