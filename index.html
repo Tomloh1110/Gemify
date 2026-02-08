@@ -11,12 +11,27 @@
         :root { --lilac: #F3F1FF; --pastel-purple: #B39DDB; --deep-purple: #7E57C2; --glass: rgba(255, 255, 255, 0.75); }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%); color: #2D3748; overflow: hidden; height: 100vh; }
         
-        /* 经典数字进化树动画 */
-        .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
-        @keyframes draw { to { stroke-dashoffset: 0; } }
-        .tree-node { animation: pulse 3s infinite ease-in-out; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
+        /* --- 核心进化树动画 --- */
+        .branch { 
+            stroke-dasharray: 1000; 
+            stroke-dashoffset: 1000; 
+            animation: draw 4s forwards ease-out; 
+        }
 
+        @keyframes draw { 
+            to { stroke-dashoffset: 0; } 
+        }
+
+        .tree-node { 
+            animation: pulse 3s infinite ease-in-out; 
+        }
+
+        @keyframes pulse { 
+            0%, 100% { opacity: 0.5; r: 4; } 
+            50% { opacity: 1; r: 6; } 
+        }
+
+        /* UI 基础样式 */
         .glass { background: var(--glass); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.4); }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
@@ -24,11 +39,9 @@
         .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
         .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
         
-        /* 侧边栏收起动画 */
         #sidebar { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 320px; transform-origin: left; }
         #sidebar.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; transform: scaleX(0); pointer-events: none; border: none; }
         
-        /* 切换按钮动画 */
         #sidebarToggle { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100; }
         #sidebarToggle.collapsed { left: 1.5rem; }
 
@@ -49,9 +62,10 @@
 </head>
 <body>
 
-    <!-- PAGE 1: HERO SECTION -->
+    <!-- PAGE 1: HERO SECTION (带动态进化树) -->
     <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#FDFCFE] portal-transition">
         <div class="w-full md:w-1/2 flex justify-center items-center">
+            <!-- 动态进化树 SVG -->
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
                 <path d="M200 450 Q200 300 200 150" stroke="#B39DDB" stroke-width="8" fill="none" class="branch" />
                 <path d="M200 350 Q100 300 80 200" stroke="#B39DDB" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
@@ -90,12 +104,10 @@
     <!-- PAGE 2: MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
         
-        <!-- SIDEBAR TOGGLE BUTTON -->
         <button id="sidebarToggle" onclick="toggleSidebar()" class="fixed left-[335px] top-7 p-2 bg-white border border-purple-100 rounded-xl shadow-lg hover:bg-purple-50 transition-all text-purple-500">
             <i id="toggleIcon" data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
 
-        <!-- SIDEBAR -->
         <aside id="sidebar" class="glass border-r border-white/50 flex flex-col p-6 z-50 relative">
             <div class="mb-6 space-y-4">
                 <div class="flex items-center justify-between">
@@ -110,32 +122,26 @@
                         <span class="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Ranks</span>
                     </button>
                 </div>
-
                 <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] border border-white">
                     <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Rank Progression</h4>
                     <div id="rankGuideList" class="space-y-2"></div>
                 </div>
-
                 <div class="space-y-2">
                     <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase"><span>Global XP</span><span id="xpText">0/100</span></div>
                     <div class="w-full h-2 bg-white/50 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div></div>
                 </div>
             </div>
-
             <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
-
             <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
                 <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
                 <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Archived Ambition</h4><div id="archivedList" class="space-y-2 opacity-60"></div></div>
             </div>
-
             <div class="mt-auto pt-6 border-t border-purple-100 space-y-2">
                 <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-all"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</button>
                 <button onclick="resetSystem()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> Reset System</button>
             </div>
         </aside>
 
-        <!-- CENTER CONTENT -->
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
                 <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Awakening System</h2><p class="text-slate-500 text-sm">Define your path and ambition</p></div>
@@ -158,7 +164,6 @@
             </div>
         </section>
 
-        <!-- RESULT MODAL -->
         <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center"><h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"><p>[System: Awaiting Input...]</p></div>
@@ -182,7 +187,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v23');
+            const saved = localStorage.getItem('gemify_final_v22');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -194,7 +199,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v23', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v22', JSON.stringify(session)); updateGlobalXP(); }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -254,7 +259,7 @@
 
         function resetSystem() {
             if (confirm("DANGER: This will clear ALL data including your name. Continue?")) {
-                localStorage.removeItem('gemify_final_v23');
+                localStorage.removeItem('gemify_final_v22');
                 session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 location.reload();
             }
