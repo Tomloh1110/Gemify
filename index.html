@@ -11,7 +11,6 @@
         :root { --lilac: #F3F1FF; --pastel-purple: #B39DDB; --deep-purple: #7E57C2; --glass: rgba(255, 255, 255, 0.75); }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%); color: #2D3748; overflow: hidden; height: 100vh; }
         
-        /* 经典数字进化树动画 */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; }
@@ -128,6 +127,7 @@
             </div>
         </section>
 
+        <!-- RESULT MODAL -->
         <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center"><h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"><p>[System: Awaiting Input...]</p></div>
@@ -221,6 +221,11 @@
             document.getElementById('setupForm').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('inputAmbition').value = '';
+            
+            // --- NEW: Clear Modal when starting fresh ---
+            document.getElementById('taskContainer').innerHTML = '';
+            document.getElementById('logContainer').innerHTML = '<p>[System: Awaiting Input...]</p>';
+            
             toggleModal(false); renderVaults();
         }
 
@@ -256,10 +261,12 @@
             if (!title) return alert("State your ambition.");
             if (name) session.playerName = name;
 
+            // --- NEW: Immediate UI Reset for New Ambition ---
+            document.getElementById('taskContainer').innerHTML = '';
+            document.getElementById('logContainer').innerHTML = `<p>> [Gemify: Resetting Neural Link...]</p>`;
+
             btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
             toggleModal(true); 
-            const container = document.getElementById('logContainer');
-            container.innerHTML = `<p>> [Gemify: Initializing Neural Link...]</p>`;
 
             const tasks = await fetchGeminiTasks(title, session.playerRole);
             const id = Date.now();
@@ -279,6 +286,8 @@
         async function runLogs(title, engine) {
             const logs = [`[Engine: ${engine}]`, `[Analyzing "${title}" context...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
+            // Clear the "Resetting" message before starting the real log
+            container.innerHTML = '';
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
                 container.appendChild(p); container.scrollTop = container.scrollHeight;
@@ -369,13 +378,9 @@
                 const heroPage = document.getElementById('heroPage');
                 const setupForm = document.getElementById('setupForm');
                 const initBtn = document.getElementById('initBtn');
-
-                // 1. 如果在首页，按 Enter 进入系统
                 if (!heroPage.classList.contains('hidden')) {
                     enterSystem();
-                } 
-                // 2. 如果在输入表单，且 AI 没在运行，按 Enter 开始进化
-                else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
+                } else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
                     startEvolution();
                 }
             }
