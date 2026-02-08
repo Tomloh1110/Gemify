@@ -20,10 +20,6 @@
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
         
-        /* 侧边栏收起动画 */
-        #sidebar { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s ease, opacity 0.3s ease; overflow: hidden; white-space: nowrap; }
-        .sidebar-collapsed { width: 0 !important; padding: 0 !important; opacity: 0; pointer-events: none; border: none !important; }
-
         .role-card { transition: all 0.3s ease; cursor: pointer; border: 2px solid transparent; }
         .role-card.active { border-color: var(--deep-purple); background: white; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(126, 87, 194, 0.15); }
         
@@ -40,6 +36,12 @@
         .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px; }
         .ai-loading { animation: pulse-bg 1.5s infinite; }
         @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* --- SIDEBAR TOGGLE ANIMATIONS --- */
+        #sidebar { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, transform 0.4s ease; width: 320px; }
+        .sidebar-collapsed { width: 0 !important; padding: 0 !important; opacity: 0; transform: translateX(-20px); pointer-events: none; }
+        #sidebarToggleBtn { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .toggle-collapsed { left: 10px !important; }
     </style>
 </head>
 <body>
@@ -85,14 +87,14 @@
     <!-- PAGE 2: MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition">
         
-        <!-- SIDEBAR -->
-        <aside id="sidebar" class="w-[320px] glass border-r border-white/50 flex flex-col p-6 z-50 relative">
-            <!-- Sidebar Toggle (Close) -->
-            <button onclick="toggleSidebar(false)" class="absolute top-6 right-4 p-2 text-slate-400 hover:text-purple-500 transition-colors">
-                <i data-lucide="panel-left-close" class="w-5 h-5"></i>
-            </button>
+        <!-- SIDEBAR TOGGLE BUTTON (OUTSIDE) -->
+        <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="fixed left-[320px] top-1/2 -translate-y-1/2 z-[60] w-8 h-16 glass border border-purple-100 rounded-r-2xl flex items-center justify-center text-purple-400 hover:text-purple-600 hover:bg-white transition-all shadow-sm">
+            <i data-lucide="chevron-left" id="toggleIcon" class="w-5 h-5"></i>
+        </button>
 
-            <div class="mb-6 space-y-4">
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="glass border-r border-white/50 flex flex-col p-6 z-50 relative overflow-hidden">
+            <div class="mb-6 space-y-4 min-w-[272px]">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div id="sidebarIcon" class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
@@ -117,26 +119,21 @@
                 </div>
             </div>
 
-            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
+            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg min-w-[272px]"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
 
-            <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
+            <div class="flex-1 overflow-y-auto no-scrollbar space-y-6 min-w-[272px]">
                 <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
                 <div><h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-2">Archived Ambition</h4><div id="archivedList" class="space-y-2 opacity-60"></div></div>
             </div>
 
-            <div class="mt-auto pt-6 border-t border-purple-100 space-y-2">
+            <div class="mt-auto pt-6 border-t border-purple-100 space-y-2 min-w-[272px]">
                 <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest hover:bg-slate-50 rounded-xl transition-all"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</button>
                 <button onclick="resetSystem()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-red-400 uppercase tracking-widest hover:bg-red-50 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> Reset System</button>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
+        <!-- CENTER CONTENT -->
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
-            <!-- Sidebar Toggle (Open) - Only visible when sidebar is hidden -->
-            <button id="openSidebarBtn" onclick="toggleSidebar(true)" class="fixed top-6 left-6 p-3 glass rounded-2xl text-purple-500 shadow-lg hover:scale-110 transition-all hidden">
-                <i data-lucide="panel-left-open" class="w-6 h-6"></i>
-            </button>
-
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
                 <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Awakening System</h2><p class="text-slate-500 text-sm">Define your path and ambition</p></div>
                 <div class="space-y-6">
@@ -158,6 +155,7 @@
             </div>
         </section>
 
+        <!-- RESULT MODAL -->
         <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] shadow-2xl border border-white/50 z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
             <div class="p-6 border-b border-purple-100 flex justify-between items-center"><h3 class="font-black text-slate-800 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-purple-50 text-purple-400 rounded-xl"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"><p>[System: Awaiting Input...]</p></div>
@@ -173,7 +171,7 @@
         const _0x4a2 = _part1 + _part2 + _part3; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_0x4a2}`;
 
-        let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+        let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [], sidebarCollapsed: false };
         const rankThresholds = [
             { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 }, { rank: 'B', xp: 600 },
             { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
@@ -190,22 +188,35 @@
                     app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                     renderVaults(); if (session.currentId) loadAmbition(session.currentId);
                 }
+                // Restore sidebar state
+                if (session.sidebarCollapsed) applySidebarState(true);
             }
         });
 
         function save() { localStorage.setItem('gemify_final_v22', JSON.stringify(session)); updateGlobalXP(); }
 
         // --- SIDEBAR TOGGLE LOGIC ---
-        function toggleSidebar(show) {
+        function toggleSidebar() {
+            session.sidebarCollapsed = !session.sidebarCollapsed;
+            applySidebarState(session.sidebarCollapsed);
+            save();
+        }
+
+        function applySidebarState(collapsed) {
             const sidebar = document.getElementById('sidebar');
-            const openBtn = document.getElementById('openSidebarBtn');
-            if (show) {
-                sidebar.classList.remove('sidebar-collapsed');
-                openBtn.classList.add('hidden');
-            } else {
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const icon = document.getElementById('toggleIcon');
+            
+            if (collapsed) {
                 sidebar.classList.add('sidebar-collapsed');
-                openBtn.classList.remove('hidden');
+                toggleBtn.classList.add('toggle-collapsed');
+                icon.setAttribute('data-lucide', 'chevron-right');
+            } else {
+                sidebar.classList.remove('sidebar-collapsed');
+                toggleBtn.classList.remove('toggle-collapsed');
+                icon.setAttribute('data-lucide', 'chevron-left');
             }
+            lucide.createIcons();
         }
 
         // --- NAVIGATION FLOW ---
@@ -216,15 +227,13 @@
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
-                if (session.playerName && session.playerName !== "") {
+                if (session.playerName) {
                     app.classList.remove('hidden');
                     setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
                     document.getElementById('statName').innerText = session.playerName;
-                    document.getElementById('inputAmbition').focus();
                 } else {
                     nameEntry.classList.remove('hidden');
                     setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
-                    document.getElementById('inputName').focus();
                 }
             }, 600);
         }
@@ -242,7 +251,6 @@
                 app.classList.remove('hidden');
                 setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
                 document.getElementById('statName').innerText = session.playerName;
-                document.getElementById('inputAmbition').focus();
             }, 600);
         }
 
@@ -257,9 +265,8 @@
         }
 
         function resetSystem() {
-            if (confirm("DANGER: This will clear ALL data including your name. Continue?")) {
+            if (confirm("DANGER: Clear all data?")) {
                 localStorage.removeItem('gemify_final_v22');
-                session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 location.reload();
             }
         }
@@ -303,7 +310,6 @@
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
-                if (!response.ok) throw new Error("API_ERROR");
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
                 window.lastEngine = "GEMINI_3_FLASH_PREVIEW_ACTIVE";
@@ -324,20 +330,15 @@
             const title = document.getElementById('inputAmbition').value.trim();
             const btn = document.getElementById('initBtn');
             if (!title) return alert("State your ambition.");
-
             document.getElementById('taskContainer').innerHTML = '';
             document.getElementById('logContainer').innerHTML = `<p>> [Gemify: Resetting Neural Link...]</p>`;
-
             btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
             toggleModal(true); 
-
             const tasks = await fetchGeminiTasks(title, session.playerRole);
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
             session.currentId = id;
-
             await runLogs(title, window.lastEngine);
-
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
@@ -433,21 +434,15 @@
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
         }
 
-        // --- GLOBAL KEYBOARD LISTENER ---
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const heroPage = document.getElementById('heroPage');
                 const nameEntryPage = document.getElementById('nameEntryPage');
                 const setupForm = document.getElementById('setupForm');
                 const initBtn = document.getElementById('initBtn');
-
-                if (!heroPage.classList.contains('hidden')) {
-                    enterSystem();
-                } else if (!nameEntryPage.classList.contains('hidden')) {
-                    proceedToAwakening();
-                } else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
-                    startEvolution();
-                }
+                if (!heroPage.classList.contains('hidden')) enterSystem();
+                else if (!nameEntryPage.classList.contains('hidden')) proceedToAwakening();
+                else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) startEvolution();
             }
         });
     </script>
