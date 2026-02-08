@@ -121,7 +121,6 @@
         </aside>
 
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
-            <!-- SETUP FORM (精简版) -->
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
                 <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Awakening System</h2><p class="text-slate-500 text-sm">Define your path and ambition</p></div>
                 <div class="space-y-6">
@@ -151,14 +150,14 @@
     </main>
 
     <script>
-        // --- BACKGROUND AI CONFIG (OUTFUSCATED) ---
+        // --- BACKGROUND AI CONFIG ---
         const _part1 = "AIzaSyC1DSvs";
         const _part2 = "fpU_xlUf4yYro";
         const _part3 = "9UXcj_XgfR9s10";
         const _0x4a2 = _part1 + _part2 + _part3; 
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_0x4a2}`;
 
-        let session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+        let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         const rankThresholds = [
             { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 }, { rank: 'B', xp: 600 },
             { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
@@ -166,9 +165,10 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v20');
+            const saved = localStorage.getItem('gemify_final_v21');
             if (saved) {
                 session = JSON.parse(saved);
+                // 如果已有数据，直接进入系统
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     document.getElementById('heroPage').classList.add('hidden');
                     const app = document.getElementById('appPage');
@@ -178,18 +178,31 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v20', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v21', JSON.stringify(session)); updateGlobalXP(); }
 
-        // --- NAVIGATION FLOW ---
+        // --- NAVIGATION FLOW (OPTIMIZED) ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
+            const app = document.getElementById('appPage');
+
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
-                nameEntry.classList.remove('hidden');
-                setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
-                document.getElementById('inputName').focus();
+                
+                // 检查是否已经有名字
+                if (session.playerName && session.playerName !== "") {
+                    // 直接进入 Awakening System
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    document.getElementById('statName').innerText = session.playerName;
+                    document.getElementById('inputAmbition').focus();
+                } else {
+                    // 进入名字输入界面
+                    nameEntry.classList.remove('hidden');
+                    setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
+                    document.getElementById('inputName').focus();
+                }
             }, 600);
         }
 
@@ -197,6 +210,7 @@
             const name = document.getElementById('inputName').value.trim();
             if (!name) return alert("Please state your identity.");
             session.playerName = name;
+            save(); // 立即保存名字
             
             const nameEntry = document.getElementById('nameEntryPage');
             const app = document.getElementById('appPage');
@@ -221,16 +235,15 @@
         }
 
         function resetSystem() {
-            if (confirm("DANGER: Delete all progress?")) {
-                localStorage.removeItem('gemify_final_v20');
-                session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
-                location.reload(); // 重启系统以回到初始状态
+            if (confirm("DANGER: This will clear ALL data including your name. Continue?")) {
+                localStorage.removeItem('gemify_final_v21');
+                session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
+                location.reload();
             }
         }
 
         function toggleRankGuide() { document.getElementById('rankGuidePopover').classList.toggle('active'); }
         function toggleModal(show) { document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)'; }
-        
         function renderRankGuide() {
             document.getElementById('rankGuideList').innerHTML = rankThresholds.map(r => `
                 <div class="flex justify-between text-[11px] p-2 rounded-xl bg-white/50 border border-purple-50">
@@ -405,16 +418,11 @@
                 const setupForm = document.getElementById('setupForm');
                 const initBtn = document.getElementById('initBtn');
 
-                // 1. Hero -> Name Entry
                 if (!heroPage.classList.contains('hidden')) {
                     enterSystem();
-                } 
-                // 2. Name Entry -> Awakening
-                else if (!nameEntryPage.classList.contains('hidden')) {
+                } else if (!nameEntryPage.classList.contains('hidden')) {
                     proceedToAwakening();
-                }
-                // 3. Awakening -> AI Evolution
-                else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
+                } else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) {
                     startEvolution();
                 }
             }
