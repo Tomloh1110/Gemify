@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemify | Secure AI Engine</title>
+    <title>Gemify | AI Evolution Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@
             </svg>
         </div>
         <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
-            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Secure Evolution</h2>
+            <h2 class="text-xs font-black tracking-[0.5em] text-purple-500 uppercase">Hackathon Edition</h2>
             <h1 class="text-7xl md:text-9xl font-extrabold text-slate-900 tracking-tighter">GEMIFY</h1>
             <p class="text-xl md:text-2xl font-light text-slate-500">Discover. Define. Dominate.</p>
             <button onclick="enterSystem()" class="px-12 py-5 bg-slate-900 text-white font-bold rounded-full hover:bg-purple-600 transition-all shadow-2xl flex items-center gap-3 mx-auto md:mx-0">
@@ -93,13 +93,11 @@
 
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
             <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] shadow-2xl space-y-8">
-                <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Initialize Evolution</h2><p class="text-slate-500 text-sm">Define your parameters for the system.</p></div>
+                <div class="text-center"><h2 class="text-3xl font-extrabold text-slate-900">Initialize Evolution</h2><p class="text-slate-500 text-sm">Powered by Gemini 3 Flash Preview</p></div>
                 <div class="space-y-6">
-                    <!-- API KEY INPUT (SECURE) -->
                     <div class="space-y-2">
                         <label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Gemini API Key</label>
-                        <input type="password" id="apiKeyInput" placeholder="Paste your NEW API Key here..." class="w-full p-4 rounded-2xl bg-white/50 border border-red-100 outline-none focus:ring-2 focus:ring-purple-400">
-                        <p class="text-[9px] text-slate-400 px-2 italic">Key is only stored in your browser's memory.</p>
+                        <input type="password" id="apiKeyInput" placeholder="Paste your API Key here..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400">
                     </div>
                     <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Player Name</label><input type="text" id="inputName" placeholder="Enter name..." class="w-full p-4 rounded-2xl bg-white/50 border border-purple-100 outline-none focus:ring-2 focus:ring-purple-400"></div>
                     <div class="space-y-2"><label class="text-[10px] font-bold text-slate-400 uppercase ml-2">Select Role</label>
@@ -136,7 +134,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_secure_v13');
+            const saved = localStorage.getItem('gemify_hackathon_v15');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -148,7 +146,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_secure_v13', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_hackathon_v15', JSON.stringify(session)); updateGlobalXP(); }
 
         function enterSystem() {
             const hero = document.getElementById('heroPage');
@@ -173,7 +171,7 @@
 
         function resetSystem() {
             if (confirm("DANGER: Delete all progress?")) {
-                localStorage.removeItem('gemify_secure_v13');
+                localStorage.removeItem('gemify_hackathon_v15');
                 session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
                 createNewAmbition(); updateGlobalXP();
             }
@@ -208,10 +206,23 @@
             toggleModal(false); renderVaults();
         }
 
-        // --- AI ENGINE (SECURE & DYNAMIC) ---
+        // --- HACKATHON AI ENGINE (GEMINI 3 FLASH PREVIEW) ---
         async function fetchGeminiTasks(title, role, userKey) {
             const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${userKey}`;
-            const prompt = `Act as Gemify Evolution Engine. Role: ${role}. Ambition: "${title}". Break into 5 hard but actionable tasks. Phase I (2), Phase II (2), Phase III (1). Return ONLY JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}]`;
+            
+            const prompt = `
+                You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}.
+                Break this impossible goal into 5 HIGHLY SPECIFIC, humanized tasks.
+                
+                CRITICAL RULES:
+                1. DO NOT use generic phrases like "Analyze core pillars", "Identify barriers", or "Practice basics".
+                2. USE terminology specific to "${title}". (e.g. if Cubing: mention F2L, finger tricks. if Flowerist: mention spiral technique, hydration).
+                3. Phase I: Cognitive Foundation (2 tasks).
+                4. Phase II: Intense Practical Application (2 tasks).
+                5. Phase III: Mastery Breakthrough (1 task).
+                
+                Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].
+            `;
             
             try {
                 const response = await fetch(API_URL, {
@@ -221,9 +232,11 @@
                 if (!response.ok) throw new Error("API_ERROR");
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
+                window.lastEngine = "GEMINI_3_FLASH_PREVIEW_ACTIVE";
                 return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
             } catch (e) {
                 console.warn("AI Failed, using Fallback.");
+                window.lastEngine = "FALLBACK_PROTOCOL";
                 return [
                     { phase: "Phase I: Neural Mapping", name: `Deconstruct the technical architecture of ${title}`, xp: 40, search: `${title} technicals` },
                     { phase: "Phase I: Neural Mapping", name: `Map the 3 most difficult bottlenecks in ${title}`, xp: 60, search: `${title} mastery` },
@@ -240,17 +253,22 @@
             const title = document.getElementById('inputAmbition').value.trim();
             const btn = document.getElementById('initBtn');
 
-            if (!userKey) return alert("Please provide a NEW API Key for security.");
+            if (!userKey) return alert("Please provide your Gemini API Key.");
             if (!title) return alert("State your ambition.");
             if (name) session.playerName = name;
 
             btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
-            toggleModal(true); await runLogs(title);
+            toggleModal(true); 
+            
+            const container = document.getElementById('logContainer');
+            container.innerHTML = `<p>> [Gemify: Initializing Neural Link...]</p>`;
 
             const tasks = await fetchGeminiTasks(title, session.playerRole, userKey);
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
             session.currentId = id;
+
+            await runLogs(title, window.lastEngine);
 
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
             document.getElementById('statName').innerText = session.playerName;
@@ -260,9 +278,9 @@
             renderTasks(session.ambitionVault[0]); renderVaults(); save();
         }
 
-        async function runLogs(title) {
-            const logs = [`[Initializing Neural Link...]`, `[Analyzing "${title}"...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
-            const container = document.getElementById('logContainer'); container.innerHTML = '';
+        async function runLogs(title, engine) {
+            const logs = [`[Engine: ${engine}]`, `[Analyzing "${title}" context...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
+            const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
                 container.appendChild(p); container.scrollTop = container.scrollHeight;
@@ -349,5 +367,3 @@
     </script>
 </body>
 </html>
-
-
