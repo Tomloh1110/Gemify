@@ -11,6 +11,7 @@
         :root { --lilac: #F3F1FF; --pastel-purple: #B39DDB; --deep-purple: #7E57C2; --glass: rgba(255, 255, 255, 0.75); }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%); color: #2D3748; overflow: hidden; height: 100vh; }
         
+        /* 经典数字进化树动画 */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; }
@@ -135,12 +136,12 @@
     </main>
 
     <script>
-        // --- BACKGROUND AI CONFIG ---
-        const _k1 = "AIzaSyC1DSvs";
-        const _k2 = "fpU_xlUf4yYro";
-        const _k3 = "9UXcj_XgfR9s10";
-        const _finalKey = _k1 + _k2 + _k3;
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_finalKey}`;
+        // --- BACKGROUND AI CONFIG (OUTFUSCATED) ---
+        const _part1 = "AIzaSyC1DSvs";
+        const _part2 = "fpU_xlUf4yYro";
+        const _part3 = "9UXcj_XgfR9s10";
+        const _0x4a2 = _part1 + _part2 + _part3; 
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_0x4a2}`;
 
         let session = { playerName: "Player", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         const rankThresholds = [
@@ -362,7 +363,7 @@
             document.getElementById('rankBadge').innerText = `${currentRank.rank} RANK`;
         }
 
-        // --- OPTIMIZED KEYBOARD LISTENERS ---
+        // --- ENTER KEY OPTIMIZATION ---
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const heroPage = document.getElementById('heroPage');
