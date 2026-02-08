@@ -11,14 +11,14 @@
         :root { --lilac: #F3F1FF; --pastel-purple: #B39DDB; --deep-purple: #7E57C2; --glass: rgba(255, 255, 255, 0.75); }
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: linear-gradient(135deg, #FDFCFE 0%, var(--lilac) 100%); color: #2D3748; overflow: hidden; height: 100vh; }
         
-        /* --- 全局固定 Logo 样式 --- */
+        /* --- 全局固定 Logo 样式 (缩小版) --- */
         .fixed-site-logo {
             position: fixed;
             top: 1.5rem;
             right: 1.5rem;
-            z-index: 9999; /* 确保在最顶层 */
-            pointer-events: none; /* 防止遮挡点击操作 */
-            filter: drop-shadow(0 0 15px rgba(157, 114, 255, 0.3));
+            z-index: 9999;
+            pointer-events: none;
+            filter: drop-shadow(0 0 10px rgba(157, 114, 255, 0.3));
         }
 
         /* --- 核心进化树动画 --- */
@@ -58,9 +58,9 @@
 </head>
 <body>
 
-    <!-- 全局固定右上角 LOGO -->
+    <!-- 全局固定右上角 LOGO (已缩小一倍) -->
     <div class="fixed-site-logo">
-        <svg width="80" height="80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <svg width="40" height="40" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <filter id="deep-purple-glow" x="-50%" y="-50%" width="200%" height="200%">
                     <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blurOut"/>
