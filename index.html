@@ -10,16 +10,17 @@
     <style>
         :root { 
             --bg-dark: #0a0a0c;
-            --bg-deep: #1a0b2e;
+            --bg-deep: #120524;
+            --bg-purple: #1a0b2e;
             --neon-purple: #9d72ff;
             --deep-purple: #4a148c;
             --text-lilac: #e0d7f5;
-            --glass-dark: rgba(15, 10, 30, 0.9);
+            --glass-dark: rgba(15, 10, 30, 0.85);
         }
         
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-deep) 100%); 
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-deep) 50%, var(--bg-purple) 100%); 
             color: var(--text-lilac); 
             overflow: hidden; 
             height: 100vh; 
@@ -31,7 +32,7 @@
         .tree-node { animation: pulse 3s infinite ease-in-out; fill: var(--neon-purple); }
         @keyframes pulse { 0%, 100% { opacity: 0.4; r: 4; } 50% { opacity: 1; r: 6; } }
 
-        .glass { background: var(--glass-dark); backdrop-filter: blur(40px); border: 1px solid rgba(157, 114, 255, 0.2); }
+        .glass { background: var(--glass-dark); backdrop-filter: blur(35px); border: 1px solid rgba(157, 114, 255, 0.2); }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
@@ -39,13 +40,11 @@
         #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; flex-shrink: 0; }
         #sidebar.collapsed { width: 0; padding: 0; opacity: 0; transform: scaleX(0); pointer-events: none; }
         
-        /* 结果栏收起 - 30% 宽度 */
+        /* 结果栏收起 */
         #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); flex-shrink: 0; }
         #resultModal.active { transform: translateX(0); }
 
-        /* 中间内容区 - 动态位移核心 */
-        #mainContentArea { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
-
+        /* 外部切换按钮 */
         .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
 
@@ -66,7 +65,7 @@
 <body>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#0a0a0c] portal-transition">
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition" style="background: linear-gradient(135deg, #0a0a0c 0%, #1a0b2e 100%);">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
                 <path d="M200 450 Q200 300 200 150" fill="none" stroke-width="8" class="branch" />
@@ -88,7 +87,7 @@
     </section>
 
     <!-- PAGE 1.5: NAME ENTRY -->
-    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] bg-[#0a0a0c] portal-transition hidden hidden-state">
+    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state" style="background: linear-gradient(135deg, #0a0a0c 0%, #1a0b2e 100%);">
         <div class="max-w-md w-full text-center space-y-8">
             <h2 class="text-4xl font-black text-white tracking-tight">What's your name?</h2>
             <input type="text" id="inputName" placeholder="Enter identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white/5 border border-purple-500/30 outline-none focus:border-purple-400 text-white shadow-2xl">
@@ -142,9 +141,9 @@
             </div>
         </aside>
 
-        <!-- CENTER CONTENT AREA (Dynamic Positioning) -->
-        <section id="mainContentArea" class="p-6">
-            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10">
+        <!-- CENTER CONTENT (Centralized) -->
+        <section id="mainContentArea" class="flex-1 flex flex-col items-center justify-center p-6 relative overflow-y-auto">
+            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10 mx-auto">
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
                     <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
@@ -171,7 +170,7 @@
                 </div>
             </div>
             
-            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl">
+            <div id="dashboard" class="hidden text-center space-y-8 mx-auto max-w-2xl">
                 <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
                     <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
                 </div>
@@ -232,7 +231,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v33');
+            const saved = localStorage.getItem('gemify_v34');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -244,7 +243,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_v33', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v34', JSON.stringify(session)); updateGlobalXP(); }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -300,7 +299,16 @@
             }, 600);
         }
 
-        function logout() { location.reload(); }
+        function logout() {
+            const hero = document.getElementById('heroPage');
+            const app = document.getElementById('appPage');
+            app.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                app.classList.add('hidden');
+                hero.classList.remove('hidden', 'hidden-state');
+            }, 600);
+        }
+
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
         async function fetchGeminiTasks(title, role) {
@@ -310,7 +318,7 @@
             2. For each stage, assign XP (MUST be a multiple of 5, e.g., 5, 10, 15, 20...).
             3. Provide a resource_url from professional academies (W3Schools, MDN, Coursera, Udemy, official docs) or YouTube.
             4. Suggest 3 essential Apps/Tools.
-            Return ONLY JSON: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
+            Return ONLY JSON: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }. No markdown.`;
             
             try {
                 const response = await fetch(API_URL, {
@@ -318,10 +326,13 @@
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await response.json();
-                const text = data.candidates[0].content.parts[0].text;
-                return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
+                let text = data.candidates[0].content.parts[0].text;
+                // Clean JSON string from potential AI markdown
+                text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                return JSON.parse(text);
             } catch (e) {
-                return { tasks: [{stage: 1, name: "Analyze basics", xp: 5, url: "https://google.com"}], apps: ["Browser"] };
+                console.error("AI Error:", e);
+                return null;
             }
         }
 
@@ -338,6 +349,13 @@
             document.getElementById('logContainer').innerHTML = `<p class="text-green-400">> [System: Initializing Granular Mapping...]</p>`;
             
             const result = await fetchGeminiTasks(title, session.playerRole);
+            
+            if (!result) {
+                alert("AI Link Failed. Using local fallback.");
+                btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
+                return;
+            }
+
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: result.tasks.map(t => ({...t, completed: false})), apps: result.apps });
             session.currentId = id;
@@ -355,10 +373,12 @@
             if (!confirm(`Regenerate path for "${ambition.title}"?`)) return;
             document.getElementById('taskContainer').innerHTML = '<p class="text-center animate-pulse">Regenerating Neural Path...</p>';
             const result = await fetchGeminiTasks(ambition.title, ambition.role);
-            ambition.tasks = result.tasks.map(t => ({...t, completed: false}));
-            ambition.apps = result.apps;
-            if (session.currentId === id) { renderTasks(ambition); renderApps(ambition.apps); }
-            save(); renderVaults();
+            if (result) {
+                ambition.tasks = result.tasks.map(t => ({...t, completed: false}));
+                ambition.apps = result.apps;
+                if (session.currentId === id) { renderTasks(ambition); renderApps(ambition.apps); }
+                save(); renderVaults();
+            }
         }
 
         async function deleteAmbition(id) {
