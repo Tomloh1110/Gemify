@@ -9,12 +9,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg-dark: #0a0a0c;
+            --bg-dark: #0f051a;
             --bg-deep: #1a0b2e;
             --neon-purple: #9d72ff;
             --deep-purple: #4a148c;
             --text-lilac: #e0d7f5;
-            --glass-dark: rgba(15, 10, 30, 0.85);
+            --glass-dark: rgba(15, 10, 30, 0.9);
         }
         
         body { 
@@ -23,6 +23,7 @@
             color: var(--text-lilac); 
             overflow: hidden; 
             height: 100vh; 
+            display: flex;
         }
 
         /* 进化树动画 */
@@ -31,40 +32,42 @@
         .tree-node { animation: pulse 3s infinite ease-in-out; fill: var(--neon-purple); }
         @keyframes pulse { 0%, 100% { opacity: 0.4; r: 4; } 50% { opacity: 1; r: 6; } }
 
-        .glass { background: var(--glass-dark); backdrop-filter: blur(30px); border: 1px solid rgba(157, 114, 255, 0.2); }
+        .glass { background: var(--glass-dark); backdrop-filter: blur(40px); border: 1px solid rgba(157, 114, 255, 0.2); }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
-        .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
-        /* 侧边栏与结果栏收起逻辑 */
-        #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; }
+        /* 侧边栏 */
+        #sidebar { transition: all 0.5s ease; width: 320px; flex-shrink: 0; display: flex; flex-direction: column; }
         #sidebar.collapsed { width: 0; padding: 0; opacity: 0; transform: scaleX(0); pointer-events: none; }
         
-        #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 400px; transform: translateX(110%); }
-        #resultModal.active { transform: translateX(0); }
+        /* 结果栏 - 30% 宽度 */
+        #resultModal { transition: all 0.5s ease; width: 0; opacity: 0; pointer-events: none; flex-shrink: 0; display: flex; flex-direction: column; }
+        #resultModal.active { width: 30%; opacity: 1; pointer-events: auto; border-left: 1px solid rgba(157, 114, 255, 0.2); }
+
+        /* 主内容区 - 绝对居中 */
+        #mainContentArea { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; padding: 2rem; position: relative; }
 
         /* 外部切换按钮 - 统一水平线 top-6 */
-        .toggle-btn { position: fixed; top: 1.5rem; z-index: 100; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; }
+        .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
 
         .role-card { transition: all 0.3s; cursor: pointer; border: 2px solid rgba(157, 114, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
-        .role-card.active { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.1); box-shadow: 0 0 25px rgba(157, 114, 255, 0.25); transform: translateY(-5px); }
+        .role-card.active { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.1); box-shadow: 0 0 25px rgba(157, 114, 255, 0.25); }
 
-        .system-log-glass { background: rgba(5, 5, 15, 0.9); border: 1px solid var(--deep-purple); color: var(--neon-purple); font-family: 'Fira Code', monospace; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .system-log-glass { background: rgba(5, 5, 15, 0.95); border: 1px solid var(--deep-purple); color: var(--neon-purple); font-family: 'Fira Code', monospace; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        .ai-loading { animation: pulse-bg 1.5s infinite; }
-        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
         #evidenceModal { background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 20000; }
-        
         .task-card { transition: all 0.3s; border: 1px solid rgba(157, 114, 255, 0.1); }
         .task-card:hover { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.05); }
+
+        /* 强制输入框文字为白色 */
+        #inputAmbition { color: white !important; background: rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition">
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition" style="background: linear-gradient(135deg, #0f051a 0%, #1a0b2e 100%);">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
                 <path d="M200 450 Q200 300 200 150" fill="none" stroke-width="8" class="branch" />
@@ -86,7 +89,7 @@
     </section>
 
     <!-- PAGE 1.5: NAME ENTRY -->
-    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state">
+    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden" style="background: linear-gradient(135deg, #0f051a 0%, #1a0b2e 100%);">
         <div class="max-w-md w-full text-center space-y-8">
             <h2 class="text-4xl font-black text-white tracking-tight">What's your name?</h2>
             <input type="text" id="inputName" placeholder="Enter identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white/5 border border-purple-500/30 outline-none focus:border-purple-400 text-white shadow-2xl">
@@ -94,110 +97,102 @@
         </div>
     </section>
 
-    <!-- MAIN APP -->
-    <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
+    <!-- MAIN APP UI -->
+    <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="toggle-btn left-6 hidden">
+        <i id="sidebarIconToggle" data-lucide="chevron-left" class="w-5 h-5"></i>
+    </button>
+
+    <button id="resultToggleBtn" onclick="toggleResult()" class="toggle-btn right-6 hidden">
+        <i id="resultIconToggle" data-lucide="chevron-right" class="w-5 h-5"></i>
+    </button>
+
+    <aside id="sidebar" class="glass p-6 hidden">
+        <div class="mt-16 mb-6 space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="sidebarIcon" class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
+                    <div>
+                        <h3 id="statName" class="font-bold text-white text-sm">Player</h3>
+                        <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
+                    </div>
+                </div>
+                <button onclick="toggleRankGuide()" class="p-2 bg-purple-900/30 border border-purple-500/30 rounded-lg text-[10px] font-bold text-purple-400 uppercase">Ranks</button>
+            </div>
+            <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] hidden border border-purple-500/30">
+                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4">Rank Progression</h4>
+                <div id="rankGuideList" class="space-y-2"></div>
+            </div>
+            <div class="space-y-2">
+                <div class="flex justify-between text-[10px] font-black text-purple-400 uppercase"><span>Global XP</span><span id="xpText">0/100</span></div>
+                <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-white/5 text-white border border-white/10 rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
+        <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
+            <div><h4 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
+            <div><h4 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 px-2 opacity-50">Archived</h4><div id="archivedList" class="space-y-2 opacity-60"></div></div>
+        </div>
+        <div class="mt-auto pt-6 border-t border-purple-500/20 space-y-2">
+            <button onclick="logout()" class="w-full py-3 text-[11px] font-bold text-slate-400 uppercase hover:text-white transition-all">Logout</button>
+            <button onclick="resetSystem()" class="w-full py-3 text-[11px] font-bold text-red-400 uppercase hover:text-red-300 transition-all">Reset System</button>
+        </div>
+    </aside>
+
+    <section id="mainContentArea" class="hidden">
+        <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10">
+            <div class="text-center space-y-2">
+                <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
+                <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
+            </div>
+            <div class="space-y-8">
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] ml-2">Select Your Role</label>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-8 rounded-[2.5rem] flex flex-col items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-900/50 flex items-center justify-center shadow-inner"><i data-lucide="sword" class="text-purple-400 w-7 h-7"></i></div>
+                            <span class="text-xs font-black uppercase tracking-widest text-white">Warrior</span>
+                        </div>
+                        <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-8 rounded-[2.5rem] flex flex-col items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-900/50 flex items-center justify-center shadow-inner"><i data-lucide="wand-2" class="text-purple-400 w-7 h-7"></i></div>
+                            <span class="text-xs font-black uppercase tracking-widest text-white">Mage</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <label class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] ml-2">Core Ambition</label>
+                    <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-5 rounded-2xl border-none outline-none text-lg font-semibold focus:ring-2 focus:ring-purple-500 transition-all">
+                </div>
+                <button id="initBtn" onclick="startEvolution()" class="w-full py-6 bg-[#9d72ff] text-black font-black text-lg rounded-2xl shadow-2xl hover:bg-white transition-all transform hover:scale-[1.02]">INITIALIZE EVOLUTION</button>
+            </div>
+        </div>
         
-        <!-- SIDEBAR TOGGLE (Left) -->
-        <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="toggle-btn left-6">
-            <i id="sidebarIconToggle" data-lucide="chevron-left" class="w-5 h-5"></i>
-        </button>
+        <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl">
+            <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
+                <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
+            </div>
+            <div class="space-y-2">
+                <h1 id="activeTitle" class="text-6xl font-black text-white tracking-tighter uppercase leading-tight"></h1>
+                <p class="text-purple-200 opacity-70 text-lg">Evolution path is active. Complete stages to ascend.</p>
+            </div>
+            <div class="space-y-4">
+                <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Software Suggestions:</h4>
+                <div id="appSuggestions" class="flex flex-wrap justify-center gap-4"></div>
+            </div>
+        </div>
+    </section>
 
-        <!-- RESULT TOGGLE (Right) -->
-        <button id="resultToggleBtn" onclick="toggleResult()" class="toggle-btn right-6 hidden">
-            <i id="resultIconToggle" data-lucide="chevron-right" class="w-5 h-5"></i>
-        </button>
-
-        <!-- SIDEBAR -->
-        <aside id="sidebar" class="glass border-r border-purple-500/20 flex flex-col p-6 z-50 relative">
-            <div class="mt-16 mb-6 space-y-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div id="sidebarIcon" class="w-10 h-10 rounded-xl bg-purple-600 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
-                        <div>
-                            <h3 id="statName" class="font-bold text-white text-sm">Player</h3>
-                            <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
-                        </div>
-                    </div>
-                    <button onclick="toggleRankGuide()" class="p-2 bg-purple-900/30 border border-purple-500/30 rounded-lg text-[10px] font-bold text-purple-400 uppercase">Ranks</button>
-                </div>
-                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100] hidden">
-                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4">Rank Progression</h4>
-                    <div id="rankGuideList" class="space-y-2"></div>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black text-purple-400 uppercase"><span>Global XP</span><span id="xpText">0/100</span></div>
-                    <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div></div>
-                </div>
+    <aside id="resultModal" class="glass">
+        <div class="p-8 border-b border-purple-500/20 flex flex-col gap-4 mt-16">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <h3 class="font-black text-white uppercase text-xs tracking-[0.3em]">Neural Path Active</h3>
             </div>
-            <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-white/5 text-white border border-white/10 rounded-2xl font-bold text-sm hover:bg-purple-600 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
-            <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
-                <div><h4 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
-                <div><h4 class="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 px-2 opacity-50">Archived</h4><div id="archivedList" class="space-y-2 opacity-60"></div></div>
+            <div id="logContainer" class="p-5 system-log-glass rounded-2xl h-36 overflow-y-auto text-[10px] leading-relaxed no-scrollbar">
+                <p class="opacity-50">[Awaiting Neural Sync...]</p>
             </div>
-            <div class="mt-auto pt-6 border-t border-purple-500/20 space-y-2">
-                <button onclick="logout()" class="w-full py-3 text-[11px] font-bold text-slate-400 uppercase hover:text-white transition-all">Logout</button>
-                <button onclick="resetSystem()" class="w-full py-3 text-[11px] font-bold text-red-400 uppercase hover:text-red-300 transition-all">Reset System</button>
-            </div>
-        </aside>
-
-        <!-- CENTER CONTENT (Centralized) -->
-        <section class="flex-1 flex flex-col items-center justify-center p-6 relative overflow-y-auto">
-            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10 mx-auto">
-                <div class="text-center space-y-2">
-                    <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
-                    <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
-                </div>
-                <div class="space-y-8">
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] ml-2">Select Your Role</label>
-                        <div class="grid grid-cols-2 gap-6">
-                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-8 rounded-[2.5rem] flex flex-col items-center gap-4">
-                                <div class="w-14 h-14 rounded-2xl bg-purple-900/50 flex items-center justify-center shadow-inner"><i data-lucide="sword" class="text-purple-400 w-7 h-7"></i></div>
-                                <span class="text-xs font-black uppercase tracking-widest text-white">Warrior</span>
-                            </div>
-                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-8 rounded-[2.5rem] flex flex-col items-center gap-4">
-                                <div class="w-14 h-14 rounded-2xl bg-purple-900/50 flex items-center justify-center shadow-inner"><i data-lucide="wand-2" class="text-purple-400 w-7 h-7"></i></div>
-                                <span class="text-xs font-black uppercase tracking-widest text-white">Mage</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] ml-2">Core Ambition</label>
-                        <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-5 rounded-2xl bg-white/5 border-none outline-none text-white text-lg font-semibold placeholder:text-slate-600 focus:ring-2 focus:ring-purple-500 transition-all">
-                    </div>
-                    <button id="initBtn" onclick="startEvolution()" class="w-full py-6 bg-[#9d72ff] text-black font-black text-lg rounded-2xl shadow-2xl hover:bg-white transition-all transform hover:scale-[1.02]">INITIALIZE EVOLUTION</button>
-                </div>
-            </div>
-            
-            <!-- DASHBOARD (Centralized) -->
-            <div id="dashboard" class="hidden text-center space-y-8 mx-auto max-w-2xl">
-                <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
-                    <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
-                </div>
-                <div class="space-y-2">
-                    <h1 id="activeTitle" class="text-6xl font-black text-white tracking-tighter uppercase leading-tight"></h1>
-                    <p class="text-purple-200 opacity-70 text-lg">Evolution path is active. Complete stages to ascend.</p>
-                </div>
-                <div id="appSuggestions" class="flex flex-wrap justify-center gap-4 mt-8"></div>
-            </div>
-        </section>
-
-        <!-- RESULT MODAL (Beautified) -->
-        <aside id="resultModal" class="glass border-l border-purple-500/20 flex flex-col overflow-hidden shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
-            <div class="p-8 border-b border-purple-500/20 flex flex-col gap-4 mt-16">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <h3 class="font-black text-white uppercase text-xs tracking-[0.3em]">Neural Path Active</h3>
-                </div>
-                <div id="logContainer" class="p-5 system-log-glass rounded-2xl h-36 overflow-y-auto text-[10px] leading-relaxed no-scrollbar">
-                    <p class="opacity-50">[Awaiting Neural Sync...]</p>
-                </div>
-            </div>
-            <div id="taskContainer" class="flex-1 overflow-y-auto p-8 space-y-6 no-scrollbar">
-                <!-- Tasks injected here -->
-            </div>
-        </aside>
-    </main>
+        </div>
+        <div id="taskContainer" class="flex-1 overflow-y-auto p-8 space-y-6 no-scrollbar"></div>
+    </aside>
 
     <!-- EVIDENCE MODAL -->
     <div id="evidenceModal" class="fixed inset-0 hidden flex items-center justify-center p-6">
@@ -206,7 +201,7 @@
                 <h3 class="text-3xl font-black text-white">Verify Effort</h3>
                 <p class="text-sm text-purple-300">Submit proof of completion to earn XP.</p>
             </div>
-            <textarea id="evidenceInput" class="w-full h-40 p-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white text-sm focus:border-purple-500 transition-all" placeholder="Describe your progress or paste a link (GitHub, Photo, etc)..."></textarea>
+            <textarea id="evidenceInput" class="w-full h-40 p-5 rounded-2xl bg-white/5 border border-white/10 outline-none text-white text-sm focus:border-purple-500 transition-all" placeholder="Describe your progress or paste a link..."></textarea>
             <div class="flex gap-4">
                 <button onclick="closeEvidence()" class="flex-1 py-4 rounded-xl bg-white/5 text-white font-bold hover:bg-white/10 transition-all">Cancel</button>
                 <button id="verifyBtn" onclick="processVerification()" class="flex-1 py-4 rounded-xl bg-[#9d72ff] text-black font-black hover:bg-white transition-all">VERIFY XP</button>
@@ -215,11 +210,11 @@
     </div>
 
     <script>
-        // --- CONFIG ---
-        const _part1 = "AIzaSyC1DSvs";
-        const _part2 = "fpU_xlUf4yYro";
-        const _part3 = "9UXcj_XgfR9s10";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_part1+_part2+_part3}`;
+        // --- BACKGROUND AI CONFIG (OUTFUSCATED) ---
+        const _p1 = "AIzaSyC1DSvs";
+        const _p2 = "fpU_xlUf4yYro";
+        const _p3 = "9UXcj_XgfR9s10";
+        const KEY = _p1 + _p2 + _p3;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         let pendingTask = null;
@@ -231,21 +226,27 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v31');
+            const saved = localStorage.getItem('gemify_final_v49');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     document.getElementById('heroPage').classList.add('hidden');
-                    const app = document.getElementById('appPage');
-                    app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+                    showApp();
                     renderVaults(); if (session.currentId) loadAmbition(session.currentId);
                 }
             }
         });
 
-        function save() { localStorage.setItem('gemify_v31', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v49', JSON.stringify(session)); updateGlobalXP(); }
 
-        // --- UI TOGGLES ---
+        function showApp() {
+            document.getElementById('sidebar').classList.remove('hidden');
+            document.getElementById('mainContentArea').classList.remove('hidden');
+            document.getElementById('sidebarToggleBtn').classList.remove('hidden');
+            document.getElementById('appPage').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            if (session.playerName) document.getElementById('statName').innerText = session.playerName;
+        }
+
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const btn = document.getElementById('sidebarToggleBtn');
@@ -264,26 +265,22 @@
             else if (forceShow === false) rm.classList.remove('active');
             else rm.classList.toggle('active');
             const isActive = rm.classList.contains('active');
-            btn.style.right = isActive ? '415px' : '1.5rem';
+            btn.style.right = isActive ? '31%' : '1.5rem';
             icon.setAttribute('data-lucide', isActive ? 'chevron-right' : 'chevron-left');
             lucide.createIcons();
         }
 
-        // --- NAVIGATION ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
-            const app = document.getElementById('appPage');
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
-                if (session.playerName) {
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
-                    document.getElementById('statName').innerText = session.playerName;
+                if (session.playerName && session.playerName !== "") {
+                    showApp();
                 } else {
                     nameEntry.classList.remove('hidden');
-                    setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
+                    document.getElementById('inputName').focus();
                 }
             }, 600);
         }
@@ -292,48 +289,50 @@
             const name = document.getElementById('inputName').value.trim();
             if (!name) return alert("Identify yourself.");
             session.playerName = name; save();
-            document.getElementById('nameEntryPage').classList.add('hidden-state');
-            setTimeout(() => {
-                document.getElementById('nameEntryPage').classList.add('hidden');
-                document.getElementById('appPage').classList.remove('hidden');
-                setTimeout(() => document.getElementById('appPage').classList.remove('opacity-0', 'pointer-events-none'), 50);
-                document.getElementById('statName').innerText = name;
-            }, 600);
+            document.getElementById('nameEntryPage').classList.add('hidden');
+            showApp();
         }
 
-        function logout() {
-            const hero = document.getElementById('heroPage');
-            const app = document.getElementById('appPage');
-            app.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                app.classList.add('hidden');
-                hero.classList.remove('hidden', 'hidden-state');
-            }, 600);
-        }
-
+        function logout() { location.reload(); }
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE ---
+        // --- AI ENGINE (REBUILT FOR STABILITY) ---
         async function fetchGeminiTasks(title, role) {
-            const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular 10-stage progression. 
+            const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
-            1. Tasks must be specific and technical.
-            2. XP MUST be multiples of 5 (5, 10, 15, 20, 25...). Start low and increase per stage.
+            1. Number of stages must be between 6 and 19.
+            2. For each stage, assign XP. XP MUST be a multiple of 5 (e.g., 5, 10, 15, 20...).
             3. Provide a resource_url from professional academies (W3Schools, MDN, Coursera, Udemy, official docs) or YouTube.
             4. Suggest 3 essential Apps/Tools.
-            Return ONLY JSON: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
+            Return ONLY a raw JSON object, no markdown backticks: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
             
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                const text = data.candidates[0].content.parts[0].text;
-                return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
-            } catch (e) {
-                return { tasks: [{stage: 1, name: "Analyze basics", xp: 5, url: "https://google.com"}], apps: ["Browser"] };
+            // 尝试列表：先试比赛要求的，再试稳定的
+            const models = ["gemini-3-flash-preview", "gemini-1.5-flash"];
+            
+            for (let model of models) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`;
+                    const response = await fetch(url, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    
+                    if (!response.ok) continue;
+
+                    const data = await response.json();
+                    let text = data.candidates[0].content.parts[0].text;
+                    
+                    // 强力提取 JSON 块
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) continue;
+                    
+                    window.lastUsedModel = model;
+                    return JSON.parse(jsonMatch[0]);
+                } catch (e) {
+                    console.warn(`Model ${model} failed...`);
+                }
             }
+            return null;
         }
 
         async function startEvolution() {
@@ -349,12 +348,18 @@
             document.getElementById('logContainer').innerHTML = `<p class="text-green-400">> [System: Initializing Neural Mapping...]</p>`;
             
             const result = await fetchGeminiTasks(title, session.playerRole);
+            
+            if (!result) {
+                btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
+                document.getElementById('logContainer').innerHTML += `<p class="text-red-400">> [System: AI Link Failed. Check API Key.]</p>`;
+                return;
+            }
+
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: result.tasks.map(t => ({...t, completed: false})), apps: result.apps });
             session.currentId = id;
 
-            await runLogs(title);
-
+            await runLogs(title, window.lastUsedModel);
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
@@ -362,8 +367,8 @@
             renderTasks(session.ambitionVault[0]); renderVaults(); renderApps(result.apps); save();
         }
 
-        async function runLogs(title) {
-            const logs = [`[Syncing with Gemini 3 Flash...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
+        async function runLogs(title, model) {
+            const logs = [`[Syncing with ${model}...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
@@ -372,7 +377,6 @@
             }
         }
 
-        // --- EVIDENCE & VERIFICATION ---
         function openEvidence(index) {
             pendingTask = index;
             document.getElementById('evidenceModal').classList.remove('hidden');
@@ -386,7 +390,7 @@
             const btn = document.getElementById('verifyBtn');
             btn.innerText = "SCANNING EFFORT..."; btn.disabled = true;
             await new Promise(r => setTimeout(r, 1500));
-            const ambition = session.ambitionVault.find(a => a.id === session.currentId);
+            const ambition = session.ambitionVault.find(a => a.id === session.currentId) || session.archivedVault.find(a => a.id === session.currentId);
             ambition.tasks[pendingTask].completed = true;
             btn.innerText = "VERIFIED +XP";
             setTimeout(() => {
@@ -395,7 +399,6 @@
             }, 800);
         }
 
-        // --- RENDERERS ---
         function renderTasks(ambition) {
             const container = document.getElementById('taskContainer');
             container.innerHTML = '';
@@ -403,7 +406,7 @@
                 const div = document.createElement('div');
                 div.className = `task-card p-6 rounded-[2rem] border ${task.completed ? 'bg-purple-900/20 border-purple-500/50 opacity-60' : 'bg-white/5 border-white/10'} flex items-start gap-5`;
                 div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked disabled' : ''} onclick="openEvidence(${index})" class="mt-1 w-7 h-7 rounded-xl border-purple-500 text-purple-500 bg-transparent focus:ring-0 cursor-pointer">
+                    <input type="checkbox" ${task.completed ? 'checked disabled' : ''} onclick="openEvidence(${index})" class="mt-1 w-7 h-7 rounded-xl border-purple-500 text-purple-500 bg-transparent cursor-pointer">
                     <div class="flex-1">
                         <div class="flex justify-between items-start mb-1">
                             <span class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Stage ${task.stage}</span>
@@ -433,14 +436,23 @@
                 const div = document.createElement('div');
                 div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(a.id);
-                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-900 rounded-lg transition-all"><i data-lucide="archive" class="w-4 h-4 text-slate-400"></i></button>`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate">${a.title}</span></div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onclick="event.stopPropagation(); archiveAmbition(event, ${a.id})" class="p-1 hover:bg-purple-500/20 rounded"><i data-lucide="archive" class="w-3.5 h-3.5"></i></button>
+                    </div>`;
                 activeList.appendChild(div);
             });
             session.archivedVault.forEach(a => {
                 const div = document.createElement('div');
                 div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(a.id);
-                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="package" class="w-4 h-4 text-slate-500"></i><span class="truncate">${a.title}</span></div><button onclick="unarchiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-purple-900 rounded-lg transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i></button>`;
+                div.innerHTML = `
+                    <div class="flex items-center gap-3 truncate"><i data-lucide="package" class="w-4 h-4 text-slate-500"></i><span class="truncate">${a.title}</span></div>
+                    <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                        <button onclick="event.stopPropagation(); unarchiveAmbition(event, ${a.id})" class="p-1 hover:bg-purple-500/20 rounded"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="event.stopPropagation(); deleteAmbition(${a.id})" class="p-1 hover:bg-red-500/20 text-red-400 rounded"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>`;
                 archivedList.appendChild(div);
             });
             lucide.createIcons();
@@ -463,14 +475,14 @@
             const idx = session.ambitionVault.findIndex(a => a.id === id);
             session.archivedVault.unshift(session.ambitionVault.splice(idx, 1)[0]);
             if (session.currentId === id) createNewAmbition();
-            renderVaults(); save();
+            save(); renderVaults();
         }
 
         function unarchiveAmbition(e, id) {
             e.stopPropagation();
             const idx = session.archivedVault.findIndex(a => a.id === id);
             session.ambitionVault.unshift(session.archivedVault.splice(idx, 1)[0]);
-            renderVaults(); save();
+            save(); renderVaults();
         }
 
         function updateGlobalXP() {
