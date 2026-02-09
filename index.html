@@ -35,28 +35,30 @@
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
-        /* 侧边栏与结果栏收起逻辑 */
-        #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; }
+        /* 侧边栏收起 */
+        #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; flex-shrink: 0; }
         #sidebar.collapsed { width: 0; padding: 0; opacity: 0; transform: scaleX(0); pointer-events: none; }
         
-        #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); }
+        /* 结果栏收起 - 30% 宽度 */
+        #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); flex-shrink: 0; }
         #resultModal.active { transform: translateX(0); }
 
-        /* 外部切换按钮 - 统一水平线 top-6 */
+        /* 中间内容区 - 动态位移核心 */
+        #mainContentArea { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
+
         .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
 
         .role-card { transition: all 0.3s; cursor: pointer; border: 2px solid rgba(157, 114, 255, 0.1); background: rgba(255, 255, 255, 0.02); }
         .role-card.active { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.1); box-shadow: 0 0 25px rgba(157, 114, 255, 0.25); transform: translateY(-5px); }
 
-        .system-log-glass { background: rgba(5, 5, 15, 0.95); border: 1px solid var(--deep-purple); color: var(--neon-purple); font-family: 'Fira Code', monospace; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .system-log-glass { background: rgba(5, 5, 15, 0.95); border: 1px solid var(--deep-purple); color: var(--neon-purple); font-family: 'Fira Code', monospace; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
         .ai-loading { animation: pulse-bg 1.5s infinite; }
         @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
         #evidenceModal { background: rgba(0,0,0,0.9); backdrop-filter: blur(15px); z-index: 20000; }
-        
         .task-card { transition: all 0.3s; border: 1px solid rgba(157, 114, 255, 0.1); }
         .task-card:hover { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.05); }
     </style>
@@ -64,7 +66,7 @@
 <body>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition">
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] bg-[#0a0a0c] portal-transition">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
                 <path d="M200 450 Q200 300 200 150" fill="none" stroke-width="8" class="branch" />
@@ -86,7 +88,7 @@
     </section>
 
     <!-- PAGE 1.5: NAME ENTRY -->
-    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state">
+    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] bg-[#0a0a0c] portal-transition hidden hidden-state">
         <div class="max-w-md w-full text-center space-y-8">
             <h2 class="text-4xl font-black text-white tracking-tight">What's your name?</h2>
             <input type="text" id="inputName" placeholder="Enter identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white/5 border border-purple-500/30 outline-none focus:border-purple-400 text-white shadow-2xl">
@@ -140,9 +142,9 @@
             </div>
         </aside>
 
-        <!-- CENTER CONTENT -->
-        <section class="flex-1 flex flex-col items-center justify-center p-6 relative overflow-y-auto">
-            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10 mx-auto">
+        <!-- CENTER CONTENT AREA (Dynamic Positioning) -->
+        <section id="mainContentArea" class="p-6">
+            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10">
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
                     <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
@@ -169,7 +171,7 @@
                 </div>
             </div>
             
-            <div id="dashboard" class="hidden text-center space-y-8 mx-auto max-w-2xl">
+            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl">
                 <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
                     <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
                 </div>
@@ -177,7 +179,10 @@
                     <h1 id="activeTitle" class="text-6xl font-black text-white tracking-tighter uppercase leading-tight"></h1>
                     <p class="text-purple-200 opacity-70 text-lg">Evolution path is active. Complete stages to ascend.</p>
                 </div>
-                <div id="appSuggestions" class="flex flex-wrap justify-center gap-4 mt-8"></div>
+                <div class="space-y-4">
+                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest">Software Suggestions:</h4>
+                    <div id="appSuggestions" class="flex flex-wrap justify-center gap-4"></div>
+                </div>
             </div>
         </section>
 
@@ -227,7 +232,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v32');
+            const saved = localStorage.getItem('gemify_v33');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -239,9 +244,8 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_v32', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v33', JSON.stringify(session)); updateGlobalXP(); }
 
-        // --- UI TOGGLES ---
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const btn = document.getElementById('sidebarToggleBtn');
@@ -265,17 +269,20 @@
             lucide.createIcons();
         }
 
-        // --- NAVIGATION ---
         function enterSystem() {
-            document.getElementById('heroPage').classList.add('hidden-state');
+            const hero = document.getElementById('heroPage');
+            const nameEntry = document.getElementById('nameEntryPage');
+            const app = document.getElementById('appPage');
+            hero.classList.add('hidden-state');
             setTimeout(() => {
-                document.getElementById('heroPage').classList.add('hidden');
+                hero.classList.add('hidden');
                 if (session.playerName) {
-                    document.getElementById('appPage').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('appPage').classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    document.getElementById('statName').innerText = session.playerName;
                 } else {
-                    document.getElementById('nameEntryPage').classList.remove('hidden');
-                    setTimeout(() => document.getElementById('nameEntryPage').classList.remove('hidden-state'), 50);
+                    nameEntry.classList.remove('hidden');
+                    setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
                 }
             }, 600);
         }
@@ -296,12 +303,11 @@
         function logout() { location.reload(); }
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
-            1. Number of stages must be decided by you based on complexity (minimum 5 stages).
-            2. For each stage, estimate learning time and assign XP (MUST be a multiple of 5, e.g., 5, 10, 15, 20...).
+            1. Number of stages must be between 6 and 19.
+            2. For each stage, assign XP (MUST be a multiple of 5, e.g., 5, 10, 15, 20...).
             3. Provide a resource_url from professional academies (W3Schools, MDN, Coursera, Udemy, official docs) or YouTube.
             4. Suggest 3 essential Apps/Tools.
             Return ONLY JSON: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
@@ -346,28 +352,21 @@
 
         async function refreshAmbition(id) {
             const ambition = session.ambitionVault.find(a => a.id === id);
-            if (!confirm(`Regenerate path for "${ambition.title}"? Current progress will be lost.`)) return;
-            
+            if (!confirm(`Regenerate path for "${ambition.title}"?`)) return;
             document.getElementById('taskContainer').innerHTML = '<p class="text-center animate-pulse">Regenerating Neural Path...</p>';
             const result = await fetchGeminiTasks(ambition.title, ambition.role);
             ambition.tasks = result.tasks.map(t => ({...t, completed: false}));
             ambition.apps = result.apps;
-            
-            if (session.currentId === id) {
-                renderTasks(ambition);
-                renderApps(ambition.apps);
-            }
-            save();
-            renderVaults();
+            if (session.currentId === id) { renderTasks(ambition); renderApps(ambition.apps); }
+            save(); renderVaults();
         }
 
         async function deleteAmbition(id) {
-            if (!confirm("DANGER: This ambition and its progress will be permanently deleted. This cannot be undone. Proceed?")) return;
+            if (!confirm("DANGER: Permanently delete this ambition?")) return;
             const idx = session.archivedVault.findIndex(a => a.id === id);
             session.archivedVault.splice(idx, 1);
             if (session.currentId === id) createNewAmbition();
-            save();
-            renderVaults();
+            save(); renderVaults();
         }
 
         async function runLogs(title) {
@@ -380,7 +379,6 @@
             }
         }
 
-        // --- EVIDENCE & VERIFICATION ---
         function openEvidence(index) {
             pendingTask = index;
             document.getElementById('evidenceModal').classList.remove('hidden');
@@ -403,7 +401,6 @@
             }, 800);
         }
 
-        // --- RENDERERS ---
         function renderTasks(ambition) {
             const container = document.getElementById('taskContainer');
             container.innerHTML = '';
