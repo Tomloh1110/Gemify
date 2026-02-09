@@ -25,7 +25,6 @@
             height: 100vh; 
         }
 
-        /* 进化树动画 */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; stroke: var(--neon-purple); }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; fill: var(--neon-purple); }
@@ -35,18 +34,14 @@
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
-        /* 侧边栏收起 */
         #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; flex-shrink: 0; }
         #sidebar.collapsed { width: 0; padding: 0; opacity: 0; transform: scaleX(0); pointer-events: none; }
         
-        /* 结果栏收起 - 30% 宽度 */
         #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); flex-shrink: 0; }
         #resultModal.active { transform: translateX(0); }
 
-        /* 中间内容区 - 动态位移核心：始终在剩余空间的中心 */
         #mainContentArea { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); flex: 1; display: flex; justify-content: center; align-items: center; overflow-y: auto; position: relative; }
 
-        /* 外部切换按钮 - 统一水平线 top-6 */
         .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
 
@@ -100,17 +95,14 @@
     <!-- MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
         
-        <!-- SIDEBAR TOGGLE (Left) -->
         <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="toggle-btn left-6">
             <i id="sidebarIconToggle" data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
 
-        <!-- RESULT TOGGLE (Right) -->
         <button id="resultToggleBtn" onclick="toggleResult()" class="toggle-btn right-6 hidden">
             <i id="resultIconToggle" data-lucide="chevron-right" class="w-5 h-5"></i>
         </button>
 
-        <!-- SIDEBAR -->
         <aside id="sidebar" class="glass border-r border-purple-500/20 flex flex-col p-6 z-50 relative">
             <div class="mt-16 mb-6 space-y-4">
                 <div class="flex items-center justify-between">
@@ -143,9 +135,8 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA (Dynamic Positioning) -->
-        <section id="mainContentArea" class="p-6">
-            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10">
+        <section id="mainContentArea">
+            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10 mx-auto">
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
                     <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
@@ -172,7 +163,7 @@
                 </div>
             </div>
             
-            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl">
+            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl mx-auto">
                 <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
                     <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
                 </div>
@@ -187,7 +178,6 @@
             </div>
         </section>
 
-        <!-- RESULT MODAL (30% Width) -->
         <aside id="resultModal" class="glass border-l border-purple-500/20 flex flex-col overflow-hidden shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
             <div class="p-8 border-b border-purple-500/20 flex flex-col gap-4 mt-16">
                 <div class="flex items-center gap-2">
@@ -218,11 +208,11 @@
     </div>
 
     <script>
-        // --- BACKGROUND AI CONFIG ---
+        // --- CONFIG ---
         const _part1 = "AIzaSyC1DSvs";
         const _part2 = "fpU_xlUf4yYro";
         const _part3 = "9UXcj_XgfR9s10";
-        // 强制使用比赛要求的 gemini-3-flash-preview
+        // 强制使用比赛要求的端点，但增加错误处理
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_part1+_part2+_part3}`;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
@@ -235,7 +225,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_hackathon_v37');
+            const saved = localStorage.getItem('gemify_v38');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -247,9 +237,8 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_hackathon_v37', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v38', JSON.stringify(session)); updateGlobalXP(); }
 
-        // --- UI TOGGLES ---
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const btn = document.getElementById('sidebarToggleBtn');
@@ -273,7 +262,6 @@
             lucide.createIcons();
         }
 
-        // --- NAVIGATION ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
@@ -281,7 +269,6 @@
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
-                // 修复登录逻辑：如果已有名字，直接进 Awakening
                 if (session.playerName) {
                     app.classList.remove('hidden');
                     setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
@@ -318,7 +305,7 @@
 
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE (REBUILT FOR GEMINI 3 FLASH PREVIEW) ---
+        // --- AI ENGINE (REBUILT FOR STABILITY) ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
@@ -345,7 +332,7 @@
                 return JSON.parse(text);
             } catch (e) {
                 console.error("AI Error:", e);
-                // Fallback Logic
+                // 更有意义的 Fallback 数据
                 return { 
                     tasks: [
                         {stage: 1, name: `Research fundamental concepts of ${title}`, xp: 5, url: `https://www.google.com/search?q=${title}+basics`},
@@ -385,17 +372,6 @@
             renderTasks(session.ambitionVault[0]); renderVaults(); renderApps(result.apps); save();
         }
 
-        async function refreshAmbition(id) {
-            const ambition = session.ambitionVault.find(a => a.id === id);
-            if (!confirm(`Regenerate path for "${ambition.title}"?`)) return;
-            document.getElementById('taskContainer').innerHTML = '<p class="text-center animate-pulse">Regenerating Neural Path...</p>';
-            const result = await fetchGeminiTasks(ambition.title, ambition.role);
-            ambition.tasks = result.tasks.map(t => ({...t, completed: false}));
-            ambition.apps = result.apps;
-            if (session.currentId === id) { renderTasks(ambition); renderApps(ambition.apps); }
-            save(); renderVaults();
-        }
-
         async function deleteAmbition(id) {
             if (!confirm("DANGER: Permanently delete this ambition?")) return;
             const idx = session.archivedVault.findIndex(a => a.id === id);
@@ -405,7 +381,7 @@
         }
 
         async function runLogs(title) {
-            const logs = [`[Syncing with Gemini 3 Flash Preview...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
+            const logs = [`[Syncing with Gemini AI...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
@@ -476,7 +452,6 @@
                 div.innerHTML = `
                     <div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate">${a.title}</span></div>
                     <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
-                        <button onclick="event.stopPropagation(); refreshAmbition(${a.id})" class="p-1 hover:bg-purple-500/20 rounded"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i></button>
                         <button onclick="event.stopPropagation(); archiveAmbition(event, ${a.id})" class="p-1 hover:bg-purple-500/20 rounded"><i data-lucide="archive" class="w-3.5 h-3.5"></i></button>
                     </div>`;
                 activeList.appendChild(div);
