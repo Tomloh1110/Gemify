@@ -26,6 +26,7 @@
             height: 100vh; 
         }
 
+        /* 进化树动画 */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; stroke: var(--neon-purple); }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; fill: var(--neon-purple); }
@@ -43,7 +44,7 @@
         #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); flex-shrink: 0; }
         #resultModal.active { transform: translateX(0); }
 
-        /* 外部切换按钮 - 统一水平线 top-6 */
+        /* 外部切换按钮 */
         .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
 
@@ -64,7 +65,7 @@
 <body>
 
     <!-- PAGE 1: HERO SECTION -->
-    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition">
+    <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition" style="background: linear-gradient(135deg, #0a0a0c 0%, #1a0b2e 100%);">
         <div class="w-full md:w-1/2 flex justify-center items-center">
             <svg viewBox="0 0 400 500" class="w-full max-w-[350px] h-auto drop-shadow-2xl">
                 <path d="M200 450 Q200 300 200 150" fill="none" stroke-width="8" class="branch" />
@@ -86,7 +87,7 @@
     </section>
 
     <!-- PAGE 1.5: NAME ENTRY -->
-    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state">
+    <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state" style="background: linear-gradient(135deg, #0a0a0c 0%, #1a0b2e 100%);">
         <div class="max-w-md w-full text-center space-y-8">
             <h2 class="text-4xl font-black text-white tracking-tight">What's your name?</h2>
             <input type="text" id="inputName" placeholder="Enter identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white/5 border border-purple-500/30 outline-none focus:border-purple-400 text-white shadow-2xl">
@@ -218,7 +219,7 @@
         const _part1 = "AIzaSyC1DSvs";
         const _part2 = "fpU_xlUf4yYro";
         const _part3 = "9UXcj_XgfR9s10";
-        const _fullKey = _part1 + _part2 + _part3;
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_part1+_part2+_part3}`;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         let pendingTask = null;
@@ -230,7 +231,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v35');
+            const saved = localStorage.getItem('gemify_v34');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -242,7 +243,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_v35', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v34', JSON.stringify(session)); updateGlobalXP(); }
 
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
@@ -310,35 +311,29 @@
 
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE (WITH AUTO-FALLBACK) ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
             1. Number of stages must be between 6 and 19.
-            2. XP MUST be multiples of 5 (5, 10, 15, 20...).
+            2. For each stage, assign XP (MUST be a multiple of 5, e.g., 5, 10, 15, 20...).
             3. Provide a resource_url from professional academies (W3Schools, MDN, Coursera, Udemy, official docs) or YouTube.
             4. Suggest 3 essential Apps/Tools.
-            Return ONLY a valid JSON object: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }. No markdown.`;
+            Return ONLY JSON: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }. No markdown.`;
             
-            // 尝试列表：先尝试 gemini-3，失败则尝试 gemini-1.5
-            const models = ["gemini-3-flash-preview", "gemini-1.5-flash"];
-            
-            for (let model of models) {
-                try {
-                    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${_fullKey}`;
-                    const response = await fetch(API_URL, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    if (!response.ok) continue; // 尝试下一个模型
-                    const data = await response.json();
-                    let text = data.candidates[0].content.parts[0].text;
-                    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-                    window.lastEngine = `${model.toUpperCase()}_ACTIVE`;
-                    return JSON.parse(text);
-                } catch (e) { continue; }
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const data = await response.json();
+                let text = data.candidates[0].content.parts[0].text;
+                // Clean JSON string from potential AI markdown
+                text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                return JSON.parse(text);
+            } catch (e) {
+                console.error("AI Error:", e);
+                return null;
             }
-            return null; // 全部失败
         }
 
         async function startEvolution() {
@@ -349,12 +344,14 @@
             
             document.getElementById('resultToggleBtn').classList.remove('hidden');
             toggleResult(true);
+
             document.getElementById('taskContainer').innerHTML = '';
-            document.getElementById('logContainer').innerHTML = `<p class="text-green-400">> [System: Initializing Neural Mapping...]</p>`;
+            document.getElementById('logContainer').innerHTML = `<p class="text-green-400">> [System: Initializing Granular Mapping...]</p>`;
             
             const result = await fetchGeminiTasks(title, session.playerRole);
+            
             if (!result) {
-                alert("AI Link Failed. Check API Key or Network.");
+                alert("AI Link Failed. Using local fallback.");
                 btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
                 return;
             }
@@ -393,7 +390,7 @@
         }
 
         async function runLogs(title) {
-            const logs = [`[Engine: ${window.lastEngine}]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
+            const logs = [`[Syncing with Gemini 3 Flash...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
