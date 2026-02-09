@@ -60,9 +60,7 @@
         .task-card { transition: all 0.3s; border: 1px solid rgba(157, 114, 255, 0.1); }
         .task-card:hover { border-color: var(--neon-purple); background: rgba(157, 114, 255, 0.05); }
 
-        /* 强制输入框文字为白色 */
         #inputAmbition { color: white !important; background: rgba(255, 255, 255, 0.05); }
-        #inputAmbition::placeholder { color: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body>
@@ -227,7 +225,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v47');
+            const saved = localStorage.getItem('gemify_final_v48');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -238,13 +236,17 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v47', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v48', JSON.stringify(session)); updateGlobalXP(); }
 
         function showApp() {
             document.getElementById('sidebar').classList.remove('hidden');
             document.getElementById('mainContentArea').classList.remove('hidden');
             document.getElementById('sidebarToggleBtn').classList.remove('hidden');
             document.getElementById('appPage').classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+            // 关键：确保名字被加载到侧边栏
+            if (session.playerName) {
+                document.getElementById('statName').innerText = session.playerName;
+            }
         }
 
         function toggleSidebar() {
@@ -276,9 +278,8 @@
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
-                if (session.playerName) {
+                if (session.playerName && session.playerName !== "") {
                     showApp();
-                    document.getElementById('statName').innerText = session.playerName;
                 } else {
                     nameEntry.classList.remove('hidden');
                     document.getElementById('inputName').focus();
@@ -289,10 +290,10 @@
         function proceedToAwakening() {
             const name = document.getElementById('inputName').value.trim();
             if (!name) return alert("Identify yourself.");
-            session.playerName = name; save();
+            session.playerName = name; 
+            save();
             document.getElementById('nameEntryPage').classList.add('hidden');
             showApp();
-            document.getElementById('statName').innerText = name;
         }
 
         function logout() { location.reload(); }
@@ -308,7 +309,6 @@
             4. Suggest 3 essential Apps/Tools.
             Return ONLY a raw JSON object: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
             
-            // 尝试列表：先试比赛要求的，再试稳定的
             const models = ["gemini-3-flash-preview", "gemini-1.5-flash"];
             
             for (let model of models) {
@@ -319,22 +319,21 @@
                         body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                     });
                     
-                    if (!response.ok) continue; // 如果 404 或 400，尝试下一个模型
+                    if (!response.ok) continue;
 
                     const data = await response.json();
                     let text = data.candidates[0].content.parts[0].text;
                     
-                    // 强力提取 JSON 块
                     const jsonMatch = text.match(/\{[\s\S]*\}/);
                     if (!jsonMatch) continue;
                     
                     window.lastUsedModel = model;
                     return JSON.parse(jsonMatch[0]);
                 } catch (e) {
-                    console.warn(`Model ${model} failed, trying next...`);
+                    console.warn(`Model ${model} failed...`);
                 }
             }
-            return null; // 全部失败
+            return null;
         }
 
         async function startEvolution() {
@@ -353,7 +352,7 @@
             
             if (!result) {
                 btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
-                document.getElementById('logContainer').innerHTML += `<p class="text-red-400">> [System: AI Link Failed. Check API Key or Network.]</p>`;
+                document.getElementById('logContainer').innerHTML += `<p class="text-red-400">> [System: AI Link Failed. Check API Key.]</p>`;
                 return;
             }
 
