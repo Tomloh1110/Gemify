@@ -9,7 +9,7 @@ Gemify is not just another task list; it is a **Structured AI Evolution Engine**
 
 ## ✨ Key Features (The "Winner's Circle" Upgrades)
 - **🛡️ Anti-Cheat Evidence System**: To maintain high-integrity learning, users must submit "Proof of Work" (summaries or links) to verify task completion before claiming XP.
-- **📈 10-Stage Sequential Evolution**: A deeply-mapped learning journey scaling from "Neural Mapping" (Beginner) to "System Mastery" (Expert).
+- **📈 n-Stage Sequential Evolution**: A deeply-mapped learning journey scaling from "Neural Mapping" (Beginner) to "System Mastery" (Expert).
 - **🎓 Professional Academy Integration**: Dynamic resource sourcing from high-authority platforms like **W3Schools, GitHub, and Coursera**, moving beyond simple video links.
 - **🛠️ Integrated Toolbox**: Automatically recommends the exact software or apps (e.g., VS Code, CapCut, Blender) required for each specific stage.
 
