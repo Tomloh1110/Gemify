@@ -239,7 +239,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v41');
+            const saved = localStorage.getItem('gemify_v43');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -251,7 +251,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_v41', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v43', JSON.stringify(session)); updateGlobalXP(); }
 
         // --- UI TOGGLES ---
         function toggleSidebar() {
