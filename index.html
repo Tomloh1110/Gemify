@@ -6,173 +6,107 @@
     <title>Gemify</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #090910;
-            --bg-gradient: linear-gradient(135deg, #090910 0%, #1a0b2e 100%);
-            --neon-purple: #bd00ff;
-            --neon-blue: #00b8ff;
-            --neon-pink: #ff00a8;
-            --glass: rgba(20, 20, 30, 0.8);
-            --glass-border: rgba(189, 0, 255, 0.3);
+            --bg-dark: #0A0015;
+            --neon-purple: #9D00FF;
+            --neon-blue: #0038FF;
+            --glass-dark: rgba(15, 0, 30, 0.7);
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: var(--bg-dark);
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: white;
             overflow: hidden;
             height: 100vh;
-            position: relative;
         }
 
-        /* Futuristic Grid Floor */
-        body::before {
-            content: "";
-            position: absolute;
+        /* --- 动态网格背景 --- */
+        .grid-bg {
+            position: fixed;
             inset: 0;
             background-image: 
-                linear-gradient(var(--glass-border) 1px, transparent 1px),
-                linear-gradient(90deg, var(--glass-border) 1px, transparent 1px);
-            background-size: 50px 50px;
-            background-position: center;
-            mask-image: radial-gradient(ellipse at center, black, transparent 80%);
+                linear-gradient(var(--neon-purple) 1px, transparent 1px),
+                linear-gradient(90deg, var(--neon-purple) 1px, transparent 1px);
+            background-size: 60px 60px;
             opacity: 0.15;
             pointer-events: none;
-            z-index: 0;
+            z-index: -1;
         }
 
-        /* Neon Stroke Title */
-        .hero-title {
-            font-size: clamp(4rem, 12vw, 8rem);
-            font-weight: 900;
-            color: transparent;
+        /* --- 背景光晕 --- */
+        .glow-overlay {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(157, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 56, 255, 0.15) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* --- 霓虹文字描边 --- */
+        .neon-text-stroke {
+            color: white;
             -webkit-text-stroke: 2px var(--neon-purple);
-            filter: drop-shadow(0 0 15px var(--neon-purple));
-            letter-spacing: -0.05em;
+            filter: drop-shadow(0 0 10px var(--neon-purple));
         }
 
-        .subtitle-glow {
-            text-transform: uppercase;
-            letter-spacing: 0.5em;
-            font-size: 0.75rem;
-            color: var(--neon-blue);
-            text-shadow: 0 0 10px var(--neon-blue);
-        }
-
-        /* Glass Panels */
-        .glass {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            box-shadow: inset 0 0 20px rgba(189, 0, 255, 0.1), 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        /* Sidebar Logic */
-        #sidebar {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 320px;
-            min-width: 320px;
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 1px solid var(--glass-border);
-            z-index: 50;
-        }
-        #sidebar.collapsed {
-            width: 0;
-            min-width: 0;
-            padding: 0;
-            margin: 0;
-            border: none;
-            opacity: 0;
-        }
-
-        #sidebarToggle {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 100;
-        }
-
-        /* Buttons & Cards */
+        /* --- 霓虹渐变按钮 --- */
         .neon-btn {
             background: linear-gradient(90deg, var(--neon-purple), var(--neon-blue));
-            color: white;
-            font-weight: 800;
             transition: all 0.3s ease;
-            box-shadow: 0 0 15px rgba(189, 0, 255, 0.4);
-            border: none;
+            box-shadow: 0 0 20px rgba(157, 0, 255, 0.4);
         }
         .neon-btn:hover {
-            box-shadow: 0 0 30px rgba(189, 0, 255, 0.8);
-            transform: translateY(-2px);
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(157, 0, 255, 0.6);
         }
 
-        .role-card {
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(255,255,255,0.03);
-        }
-        .role-card.active {
-            border-color: var(--neon-blue);
-            background: rgba(0, 184, 255, 0.1);
-            box-shadow: 0 0 20px rgba(0, 184, 255, 0.3);
+        /* --- 玻璃卡片 --- */
+        .glass-card {
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(157, 0, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
 
-        .sidebar-item {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .sidebar-item.active {
-            border-color: var(--neon-purple);
-            background: rgba(189, 0, 255, 0.1);
-        }
+        /* --- 进化树动画 --- */
+        .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
+        .tree-node { animation: pulse 3s infinite ease-in-out; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
 
-        /* Rank Popover - Fixed Auto-Open */
-        #rankGuidePopover {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: scale(0.9) translateY(-10px);
-            opacity: 0;
-            pointer-events: none;
-            visibility: hidden; /* 强制初始隐藏 */
-        }
-        #rankGuidePopover.active {
-            transform: scale(1) translateY(0);
-            opacity: 1;
-            pointer-events: auto;
-            visibility: visible;
-        }
+        /* 侧边栏收起 */
+        #sidebar { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); width: 320px; }
+        #sidebar.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; transform: translateX(-100%); }
+        
+        .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
+        .hidden-state { opacity: 0; transform: translateY(30px); pointer-events: none; }
 
-        .system-log-glass {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-family: 'Fira Code', monospace;
-            text-shadow: 0 0 5px var(--neon-blue);
-        }
+        .role-card { transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .role-card.active { border-color: var(--neon-purple); background: rgba(157, 0, 255, 0.1); box-shadow: 0 0 15px rgba(157, 0, 255, 0.3); }
 
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 全局固定右上角 LOGO */
         .fixed-site-logo {
             position: fixed;
             top: 1.5rem;
             right: 1.5rem;
             z-index: 9999;
-            pointer-events: none;
-        }
-
-        .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
-        .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-
-        input {
-            background: rgba(0,0,0,0.3) !important;
-            border: 1px solid var(--glass-border) !important;
-            color: white !important;
+            filter: drop-shadow(0 0 10px var(--neon-purple));
         }
     </style>
 </head>
 <body>
 
-    <!-- GLOBAL NEON LOGO -->
+    <div class="grid-bg"></div>
+    <div class="glow-overlay"></div>
+
+    <!-- 全局固定右上角 LOGO -->
     <div class="fixed-site-logo">
         <svg width="60" height="60" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -182,15 +116,18 @@
                     <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
             </defs>
-            <g filter="url(#deep-purple-glow)" stroke="#bd00ff" stroke-width="2.5" fill="none">
-                <path d="M100 30 L112 50 L100 70 L88 50 Z" fill="#bd00ff" stroke="none"/>
+            <g filter="url(#deep-purple-glow)" stroke="#9d72ff" stroke-width="2.5" fill="none">
+                <path d="M100 30 L112 50 L100 70 L88 50 Z" fill="#9d72ff" stroke="none"/>
                 <path d="M100 85 L100 180"/>
-                <path d="M100 95 L85 80 M100 95 L115 80"/>
-                <path d="M100 120 L75 95 L75 85 M100 120 L125 95 L125 85"/>
-                <path d="M100 145 L60 115 L60 105 M100 145 L140 115 L140 105"/>
-                <g fill="#00b8ff">
-                    <circle cx="85" cy="80" r="3"/><circle cx="115" cy="80" r="3"/>
-                    <circle cx="75" cy="85" r="3"/><circle cx="125" cy="85" r="3"/>
+                <path d="M100 95 L85 80"/><path d="M100 95 L115 80"/>
+                <path d="M100 120 L75 95 L75 85"/><path d="M100 120 L125 95 L125 85"/>
+                <path d="M100 145 L60 115 L60 105"/><path d="M100 145 L140 115 L140 105"/>
+                <path d="M100 170 L45 125 L45 115"/><path d="M100 170 L155 125 L155 115"/>
+                <g fill="#9d72ff" stroke="none">
+                    <circle cx="85" cy="80" r="4"/><circle cx="115" cy="80" r="4"/>
+                    <circle cx="75" cy="85" r="4"/><circle cx="125" cy="85" r="4"/>
+                    <circle cx="60" cy="105" r="4"/><circle cx="140" cy="105" r="4"/>
+                    <circle cx="45" cy="115" r="4"/><circle cx="155" cy="115" r="4"/>
                 </g>
             </g>
         </svg>
@@ -198,150 +135,107 @@
 
     <!-- PAGE 1: HERO SECTION -->
     <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-12 z-[100] portal-transition">
-        <div class="w-full md:w-1/2 flex justify-center items-center relative">
-            <svg viewBox="0 0 400 500" class="w-full max-w-[450px] h-auto drop-shadow-[0_0_50px_rgba(189,0,255,0.3)]">
-                <defs>
-                    <filter id="neon-glow-filter" x="-50%" y="-50%" width="200%" height="200%">
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
-                        <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-                    </filter>
-                    <linearGradient id="circuit-grad" x1="0%" y1="100%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:#bd00ff;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#00b8ff;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#ff00a8;stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                <g filter="url(#neon-glow-filter)" stroke="url(#circuit-grad)" stroke-width="3" fill="none">
-                    <path d="M200 450 L200 120" stroke-width="5" />
-                    <circle cx="200" cy="80" r="18" fill="url(#circuit-grad)" stroke="none" opacity="0.8" />
-                    <circle cx="200" cy="80" r="10" fill="#ffffff" stroke="none" />
-                    <path d="M200 380 C100 380 80 250 60 220" />
-                    <circle cx="60" cy="220" r="6" fill="#bd00ff" stroke="none" />
-                    <path d="M200 300 C120 300 100 180 90 150" />
-                    <circle cx="90" cy="150" r="5" fill="#00b8ff" stroke="none" />
-                    <path d="M200 380 C300 380 320 250 340 220" />
-                    <circle cx="340" cy="220" r="6" fill="#ff00a8" stroke="none" />
-                    <path d="M200 300 C280 300 300 180 310 150" />
-                    <circle cx="310" cy="150" r="5" fill="#00b8ff" stroke="none" />
-                </g>
+        <div class="w-full md:w-1/2 flex justify-center items-center">
+            <svg viewBox="0 0 400 500" class="w-full max-w-[400px] h-auto drop-shadow-2xl">
+                <path d="M200 450 Q200 300 200 150" stroke="#9D00FF" stroke-width="8" fill="none" class="branch" />
+                <path d="M200 350 Q100 300 80 200" stroke="#0038FF" stroke-width="4" fill="none" class="branch" style="animation-delay: 0.5s" />
+                <path d="M200 300 Q300 250 320 150" stroke="#0038FF" stroke-width="4" fill="none" class="branch" style="animation-delay: 1s" />
+                <circle cx="80" cy="200" r="5" fill="white" class="tree-node" />
+                <circle cx="320" cy="150" r="5" fill="white" class="tree-node" style="animation-delay: 0.7s" />
+                <circle cx="200" cy="50" r="5" fill="white" class="tree-node" style="animation-delay: 1.4s" />
             </svg>
         </div>
-        <div class="w-full md:w-1/2 text-center md:text-left space-y-6 z-10">
-            <h2 class="subtitle-glow">AI Evolution Engine</h2>
-            <h1 class="hero-title">GEMIFY</h1>
-            <p class="text-xl font-light text-slate-400">Discover. Define. Dominate.</p>
-            <button onclick="enterSystem()" class="neon-btn px-12 py-5 rounded-full flex items-center gap-3 mx-auto md:mx-0">
-                ENTER THE SYSTEM <i data-lucide="zap"></i>
+        <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
+            <h2 class="text-sm font-bold tracking-[0.3em] text-blue-400 uppercase">AI Evolution Engine</h2>
+            <h1 class="text-8xl md:text-[10rem] font-black neon-text-stroke tracking-tighter leading-none">GEMIFY</h1>
+            <p class="text-xl md:text-2xl font-light text-slate-400">Discover. Define. Dominate.</p>
+            <button onclick="enterSystem()" class="neon-btn px-12 py-5 text-white font-black rounded-full flex items-center gap-3 mx-auto md:mx-0 uppercase tracking-widest">
+                Enter the System <i data-lucide="zap"></i>
             </button>
         </div>
     </section>
 
     <!-- PAGE 1.5: NAME ENTRY -->
     <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state">
-        <div class="max-w-md w-full text-center space-y-8 glass p-12 rounded-[3rem]">
-            <div class="w-20 h-20 bg-purple-900/30 border border-purple-500 rounded-3xl flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(189,0,255,0.3)]">
+        <div class="max-w-md w-full text-center space-y-8 glass-card p-12 rounded-[3rem]">
+            <div class="w-20 h-20 bg-purple-900/50 rounded-3xl flex items-center justify-center mx-auto border border-purple-500/50 shadow-[0_0_20px_rgba(157,0,255,0.3)]">
                 <i data-lucide="fingerprint" class="text-purple-400 w-10 h-10"></i>
             </div>
-            <h2 class="text-3xl font-bold text-white">Identify Player</h2>
-            <input type="text" id="inputName" placeholder="Enter your identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl outline-none transition-all">
-            <button onclick="proceedToAwakening()" class="neon-btn w-full py-4 rounded-full">AWAKEN IDENTITY</button>
+            <h2 class="text-3xl font-black text-white tracking-tight uppercase">Identify Yourself</h2>
+            <input type="text" id="inputName" placeholder="Enter identity..." class="w-full p-5 text-center text-xl font-bold rounded-2xl bg-black/50 border border-purple-500/30 outline-none focus:border-purple-400 text-white transition-all">
+            <button onclick="proceedToAwakening()" class="neon-btn w-full py-4 text-white font-bold rounded-xl uppercase tracking-widest">Awaken Identity</button>
         </div>
     </section>
 
     <!-- PAGE 2: MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
         
-        <!-- SIDEBAR TOGGLE -->
-        <button id="sidebarToggle" onclick="toggleSidebar()" class="fixed left-[335px] top-7 p-2 glass rounded-xl text-purple-400 hover:text-white transition-all shadow-lg">
+        <button id="sidebarToggle" onclick="toggleSidebar()" class="fixed left-[335px] top-7 p-2 bg-purple-900/80 border border-purple-500/50 rounded-xl shadow-lg text-purple-400 z-[100]">
             <i id="toggleIcon" data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
 
-        <!-- SIDEBAR -->
-        <aside id="sidebar" class="glass flex flex-col p-6 relative">
-            <div class="mb-6 space-y-6">
+        <aside id="sidebar" class="glass-card border-r border-purple-500/20 flex flex-col p-6 z-50 relative">
+            <div class="mb-6 space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div id="sidebarIcon" class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
                         <div>
                             <h3 id="statName" class="font-bold text-white text-sm">Player</h3>
-                            <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-600 text-white rounded uppercase tracking-tighter">E Rank</span>
+                            <span id="rankBadge" class="text-[9px] font-black px-2 py-0.5 bg-purple-600 text-white rounded uppercase">E Rank</span>
                         </div>
                     </div>
-                    <button onclick="toggleRankGuide()" class="text-[10px] font-bold text-blue-400 uppercase tracking-widest hover:text-white">Ranks</button>
+                    <button onclick="toggleRankGuide()" class="p-2 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold uppercase text-purple-400">Ranks</button>
                 </div>
-
-                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-5 rounded-3xl shadow-2xl z-[100]">
-                    <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Rank Progression</h4>
+                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass-card p-5 rounded-3xl z-[100]">
+                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4">Rank Progression</h4>
                     <div id="rankGuideList" class="space-y-2"></div>
                 </div>
-
                 <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase"><span>Global XP</span><span id="xpText" class="text-purple-400">0/100</span></div>
-                    <div class="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
-                        <div id="xpBar" class="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000" style="width: 0%"></div>
-                    </div>
+                    <div class="flex justify-between text-[10px] font-black text-purple-300 uppercase"><span>Global XP</span><span id="xpText">0/100</span></div>
+                    <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-500" style="width: 0%"></div></div>
                 </div>
             </div>
-
-            <button onclick="createNewAmbition()" class="neon-btn flex items-center justify-center gap-2 w-full py-4 mb-8 rounded-2xl text-sm">
-                <i data-lucide="plus" class="w-4 h-4"></i> New Ambition
-            </button>
-
+            <button onclick="createNewAmbition()" class="neon-btn flex items-center justify-center gap-2 w-full py-4 mb-8 text-white rounded-2xl font-bold text-sm uppercase tracking-tighter"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
             <div class="flex-1 overflow-y-auto no-scrollbar space-y-6">
-                <div><h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
+                <div><h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
                 <div><h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Archived</h4><div id="archivedList" class="space-y-2 opacity-50"></div></div>
             </div>
-
             <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
-                <button onclick="logout()" class="w-full py-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:text-white transition-all">Logout</button>
-                <button onclick="resetSystem()" class="w-full py-3 text-[11px] font-bold text-red-500/70 uppercase tracking-widest hover:text-red-400 transition-all">Reset System</button>
+                <button onclick="logout()" class="w-full py-3 text-[11px] font-bold text-slate-400 uppercase hover:text-white transition-all">Logout</button>
+                <button onclick="resetSystem()" class="w-full py-3 text-[11px] font-bold text-red-500/70 uppercase hover:text-red-400 transition-all">Reset System</button>
             </div>
         </aside>
 
-        <!-- CENTER CONTENT -->
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
-            <div id="setupForm" class="max-w-xl w-full glass p-10 rounded-[3rem] space-y-8">
-                <div class="text-center"><h2 class="text-3xl font-extrabold text-white">Awakening System</h2><p class="text-slate-400 text-sm">Define your path and ambition</p></div>
+            <div id="setupForm" class="max-w-xl w-full glass-card p-12 rounded-[3rem] space-y-8">
+                <div class="text-center"><h2 class="text-3xl font-black text-white uppercase tracking-tight">Awakening System</h2><p class="text-purple-400 text-xs uppercase tracking-widest">Define your evolution path</p></div>
                 <div class="space-y-6">
-                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Select Role</label>
+                    <div class="space-y-2"><label class="text-[10px] font-bold text-purple-400 uppercase ml-2">Select Role</label>
                         <div class="grid grid-cols-2 gap-4">
-                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-6 rounded-3xl flex flex-col items-center gap-3 cursor-pointer">
-                                <div class="w-12 h-12 rounded-2xl bg-purple-900/30 flex items-center justify-center text-purple-400"><i data-lucide="sword"></i></div>
-                                <span class="text-xs font-bold uppercase tracking-widest">Warrior</span>
-                            </div>
-                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-6 rounded-3xl flex flex-col items-center gap-3 cursor-pointer">
-                                <div class="w-12 h-12 rounded-2xl bg-blue-900/30 flex items-center justify-center text-blue-400"><i data-lucide="wand-2"></i></div>
-                                <span class="text-xs font-bold uppercase tracking-widest">Mage</span>
-                            </div>
+                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-6 rounded-3xl bg-white/5 flex flex-col items-center gap-3"><i data-lucide="sword" class="text-purple-400"></i><span class="text-xs font-bold uppercase">Warrior</span></div>
+                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-6 rounded-3xl bg-white/5 flex flex-col items-center gap-3"><i data-lucide="wand-2" class="text-blue-400"></i><span class="text-xs font-bold uppercase">Mage</span></div>
                         </div>
                     </div>
-                    <div class="space-y-2"><label class="text-[10px] font-bold text-slate-500 uppercase ml-2">Core Ambition</label><input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-6 rounded-3xl outline-none"></div>
-                    <button id="initBtn" onclick="startEvolution()" class="neon-btn w-full py-5 rounded-3xl text-lg">INITIALIZE EVOLUTION</button>
+                    <div class="space-y-2"><label class="text-[10px] font-bold text-purple-400 uppercase ml-2">Core Ambition</label><input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-5 rounded-2xl bg-black/50 border border-white/10 outline-none focus:border-purple-500 text-white"></div>
+                    <button id="initBtn" onclick="startEvolution()" class="neon-btn w-full py-5 text-white font-black rounded-2xl uppercase tracking-widest">Initialize Evolution</button>
                 </div>
             </div>
             <div id="dashboard" class="hidden text-center space-y-6">
-                <div class="w-24 h-24 glass rounded-[2rem] flex items-center justify-center mx-auto mb-6 animate-pulse border-blue-500/50 shadow-[0_0_30px_rgba(0,184,255,0.2)]">
-                    <i data-lucide="shield-check" class="w-12 h-12 text-blue-400"></i>
-                </div>
-                <h1 id="activeTitle" class="text-5xl md:text-6xl font-black text-white uppercase leading-tight tracking-tighter"></h1>
-                <p class="text-slate-400 max-w-md mx-auto">Evolution path is active. Complete tasks to increase your Rank.</p>
-                <button onclick="toggleModal(true)" class="neon-btn px-10 py-4 rounded-full flex items-center gap-3 mx-auto">VIEW QUEST LOG <i data-lucide="layout-list"></i></button>
+                <div class="w-24 h-24 bg-gradient-to-br from-purple-600 to-blue-600 rounded-[2rem] shadow-2xl flex items-center justify-center mx-auto mb-6 animate-pulse"><i data-lucide="shield-check" class="w-12 h-12 text-white"></i></div>
+                <h1 id="activeTitle" class="text-6xl md:text-8xl font-black text-white uppercase leading-none tracking-tighter"></h1>
+                <p class="text-purple-400 uppercase text-sm tracking-widest">Evolution path is active</p>
+                <button onclick="toggleModal(true)" class="neon-btn px-10 py-4 text-white font-bold rounded-full uppercase tracking-widest">View Quest Log</button>
             </div>
         </section>
 
-        <!-- RESULT MODAL -->
-        <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass rounded-[2.5rem] z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden border-l border-white/10">
-            <div class="p-6 border-b border-white/10 flex justify-between items-center">
-                <h3 class="font-black text-white uppercase text-xs tracking-widest">Evolution Path</h3>
-                <button onclick="toggleModal(false)" class="p-2 hover:bg-white/10 rounded-xl transition-all"><i data-lucide="x" class="w-4 h-4"></i></button>
-            </div>
+        <aside id="resultModal" class="fixed top-4 right-4 bottom-4 w-[38%] glass-card rounded-[2.5rem] z-[60] transition-transform duration-500 translate-x-[120%] flex flex-col overflow-hidden">
+            <div class="p-6 border-b border-white/10 flex justify-between items-center"><h3 class="font-black text-purple-400 uppercase text-xs tracking-widest">Evolution Path</h3><button onclick="toggleModal(false)" class="p-2 bg-white/5 rounded-xl text-white"><i data-lucide="x" class="w-4 h-4"></i></button></div>
             <div id="logContainer" class="mx-6 mt-6 p-5 system-log-glass rounded-3xl h-32 overflow-y-auto text-[11px] leading-relaxed"></div>
-            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar"></div>
+            <div id="taskContainer" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar"></div>
         </aside>
     </main>
 
     <script>
-        // --- BACKGROUND AI CONFIG ---
         const _part1 = "AIzaSyC1DSvs";
         const _part2 = "fpU_xlUf4yYro";
         const _part3 = "9UXcj_XgfR9s10";
@@ -349,27 +243,23 @@
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_0x4a2}`;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
-        const rankThresholds = [
-            { rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 }, { rank: 'B', xp: 600 },
-            { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }
-        ];
+        const rankThresholds = [{ rank: 'E', xp: 0 }, { rank: 'D', xp: 100 }, { rank: 'C', xp: 300 }, { rank: 'B', xp: 600 }, { rank: 'A', xp: 1000 }, { rank: 'S', xp: 1500 }, { rank: 'SS', xp: 2100 }, { rank: 'SSS', xp: 3000 }];
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_neon_v2');
+            const saved = localStorage.getItem('gemify_cyber_v28');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
                     document.getElementById('heroPage').classList.add('hidden');
                     const app = document.getElementById('appPage');
-                    app.classList.remove('hidden');
-                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    app.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
                     renderVaults(); if (session.currentId) loadAmbition(session.currentId);
                 }
             }
         });
 
-        function save() { localStorage.setItem('gemify_neon_v2', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_cyber_v28', JSON.stringify(session)); updateGlobalXP(); }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -383,22 +273,24 @@
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
+            const app = document.getElementById('appPage');
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
                 if (session.playerName) {
-                    proceedToAwakening();
+                    app.classList.remove('hidden');
+                    setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
+                    document.getElementById('statName').innerText = session.playerName;
                 } else {
                     nameEntry.classList.remove('hidden');
                     setTimeout(() => nameEntry.classList.remove('hidden-state'), 50);
-                    document.getElementById('inputName').focus();
                 }
             }, 600);
         }
 
         function proceedToAwakening() {
-            const name = document.getElementById('inputName').value.trim() || session.playerName;
-            if (!name) return alert("Please state your identity.");
+            const name = document.getElementById('inputName').value.trim();
+            if (!name) return;
             session.playerName = name; save();
             const nameEntry = document.getElementById('nameEntryPage');
             const app = document.getElementById('appPage');
@@ -408,7 +300,6 @@
                 app.classList.remove('hidden');
                 setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
                 document.getElementById('statName').innerText = session.playerName;
-                document.getElementById('inputAmbition').focus();
             }, 600);
         }
 
@@ -423,24 +314,19 @@
         }
 
         function resetSystem() {
-            if (confirm("DANGER: This will clear ALL data. Continue?")) {
-                localStorage.removeItem('gemify_neon_v2');
+            if (confirm("DANGER: Reset all data?")) {
+                localStorage.removeItem('gemify_cyber_v28');
                 location.reload();
             }
         }
 
-        function toggleRankGuide() { 
-            document.getElementById('rankGuidePopover').classList.toggle('active'); 
-        }
-
-        function toggleModal(show) { 
-            document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)'; 
-        }
+        function toggleRankGuide() { document.getElementById('rankGuidePopover').classList.toggle('active'); }
+        function toggleModal(show) { document.getElementById('resultModal').style.transform = show ? 'translateX(0)' : 'translateX(120%)'; }
         
         function renderRankGuide() {
             document.getElementById('rankGuideList').innerHTML = rankThresholds.map(r => `
-                <div class="flex justify-between text-[11px] p-2 rounded-xl bg-white/5 border border-white/10">
-                    <span class="font-bold text-slate-300">${r.rank} Rank</span><span class="font-black text-purple-400">${r.xp} XP</span>
+                <div class="flex justify-between text-[11px] p-3 rounded-xl bg-white/5 border border-white/10">
+                    <span class="font-bold text-purple-300">${r.rank} Rank</span><span class="font-black text-blue-400">${r.xp} XP</span>
                 </div>`).reverse().join('');
         }
 
@@ -448,10 +334,6 @@
             session.playerRole = role;
             document.getElementById('role-Warrior').classList.toggle('active', role === 'Warrior');
             document.getElementById('role-Mage').classList.toggle('active', role === 'Mage');
-            updateSidebarIcon(role);
-        }
-
-        function updateSidebarIcon(role) {
             document.getElementById('sidebarIcon').innerHTML = `<i data-lucide="${role === 'Warrior' ? 'sword' : 'wand-2'}"></i>`;
             lucide.createIcons();
         }
@@ -461,60 +343,45 @@
             document.getElementById('setupForm').classList.remove('hidden');
             document.getElementById('dashboard').classList.add('hidden');
             document.getElementById('inputAmbition').value = '';
-            document.getElementById('taskContainer').innerHTML = '';
-            document.getElementById('logContainer').innerHTML = '<p class="text-blue-400 opacity-50">[System: Awaiting Input...]</p>';
-            toggleModal(false); renderVaults();
-        }
-
-        async function fetchGeminiTasks(title, role) {
-            const prompt = `You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}. Break this goal into 5 HIGHLY SPECIFIC, technical, and humanized tasks. Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].`;
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                const text = data.candidates[0].content.parts[0].text;
-                return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
-            } catch (e) {
-                return [
-                    { phase: "Phase I: Neural Mapping", name: `Deconstruct the technical architecture of ${title}`, xp: 40, search: `${title} technicals` },
-                    { phase: "Phase II: Core Execution", name: `Execute a 4-hour high-intensity practical drill in ${title}`, xp: 150, search: `${title} advanced drills` },
-                    { phase: "Phase III: System Mastery", name: `Achieve a breakthrough milestone in ${title}`, xp: 500, search: `${title} masterclass` }
-                ];
-            }
+            toggleModal(false);
         }
 
         async function startEvolution() {
             const title = document.getElementById('inputAmbition').value.trim();
+            if (!title) return;
             const btn = document.getElementById('initBtn');
-            if (!title) return alert("State your ambition.");
+            btn.disabled = true; btn.innerText = "SYNCING...";
+            toggleModal(true);
+            document.getElementById('logContainer').innerHTML = `<p class="text-purple-400">> [Initializing Neural Link...]</p>`;
 
-            btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
-            toggleModal(true); 
-            document.getElementById('taskContainer').innerHTML = '';
-            document.getElementById('logContainer').innerHTML = `<p class="text-purple-400">> [Gemify: Initializing Neural Link...]</p>`;
-
-            const tasks = await fetchGeminiTasks(title, session.playerRole);
-            const id = Date.now();
-            session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
-            session.currentId = id;
-
-            await runLogs(title);
-
-            btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
-            document.getElementById('activeTitle').innerText = title;
-            document.getElementById('setupForm').classList.add('hidden');
-            document.getElementById('dashboard').classList.remove('hidden');
-            renderTasks(session.ambitionVault[0]); renderVaults(); save();
+            try {
+                const prompt = `Act as Gemify AI. Role: ${session.playerRole}. Ambition: "${title}". Break into 5 hard but actionable tasks. Return ONLY JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}]`;
+                const response = await fetch(API_URL, { method: "POST", body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+                const data = await response.json();
+                const tasks = JSON.parse(data.candidates[0].content.parts[0].text.replace(/```json/g, "").replace(/```/g, "").trim());
+                
+                const id = Date.now();
+                session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
+                session.currentId = id;
+                
+                await runLogs(title);
+                document.getElementById('activeTitle').innerText = title;
+                document.getElementById('setupForm').classList.add('hidden');
+                document.getElementById('dashboard').classList.remove('hidden');
+                renderTasks(session.ambitionVault[0]); renderVaults(); save();
+            } catch (e) {
+                alert("AI Link Failed. Check connection.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Initialize Evolution";
+            }
         }
 
         async function runLogs(title) {
-            const logs = [`[Engine: GEMINI_3_FLASH_ACTIVE]`, `[Analyzing "${title}" context...]`, `[Deconstructing mastery nodes...]`, `[Evolution Path Ready.]` ];
+            const logs = [`[Engine: GEMINI_3_ACTIVE]`, `[Analyzing "${title}"...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
             container.innerHTML = '';
             for (const log of logs) {
-                const p = document.createElement('p'); p.innerText = `> ${log}`;
+                const p = document.createElement('p'); p.className = "text-blue-400 mb-1"; p.innerText = `> ${log}`;
                 container.appendChild(p); container.scrollTop = container.scrollHeight;
                 await new Promise(r => setTimeout(r, 600));
             }
@@ -523,11 +390,10 @@
         function loadAmbition(id) {
             session.currentId = id;
             const data = session.ambitionVault.find(a => a.id === id) || session.archivedVault.find(a => a.id === id);
-            document.getElementById('statName').innerText = session.playerName;
             document.getElementById('activeTitle').innerText = data.title;
             document.getElementById('setupForm').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
-            updateSidebarIcon(data.role); renderTasks(data); renderVaults(); save();
+            renderTasks(data); renderVaults(); save();
         }
 
         function archiveAmbition(e, id) {
@@ -551,16 +417,16 @@
             activeList.innerHTML = ''; archivedList.innerHTML = '';
             session.ambitionVault.forEach(a => {
                 const div = document.createElement('div');
-                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
+                div.className = `sidebar-item p-4 rounded-xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(a.id);
-                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate text-white">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg transition-all"><i data-lucide="archive" class="w-4 h-4 text-slate-400"></i></button>`;
+                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate uppercase">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg"><i data-lucide="archive" class="w-4 h-4 text-slate-400"></i></button>`;
                 activeList.appendChild(div);
             });
             session.archivedVault.forEach(a => {
                 const div = document.createElement('div');
-                div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
+                div.className = `sidebar-item p-4 rounded-xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(a.id);
-                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="package" class="w-4 h-4 text-slate-500"></i><span class="truncate text-slate-500">${a.title}</span></div><button onclick="unarchiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg transition-all"><i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i></button>`;
+                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="package" class="w-4 h-4 text-slate-500"></i><span class="truncate uppercase">${a.title}</span></div><button onclick="unarchiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg"><i data-lucide="rotate-ccw" class="w-4 h-4 text-slate-400"></i></button>`;
                 archivedList.appendChild(div);
             });
             lucide.createIcons();
@@ -570,14 +436,14 @@
             const container = document.getElementById('taskContainer'); container.innerHTML = '';
             ambition.tasks.forEach((task, index) => {
                 const div = document.createElement('div');
-                div.className = "p-5 rounded-[1.5rem] bg-white/5 border border-white/10 flex items-start gap-4 shadow-xl";
+                div.className = "p-5 rounded-2xl bg-white/5 border border-white/10 flex items-start gap-4 shadow-xl";
                 div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-purple-500 text-purple-600 bg-black/50">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-5 h-5 rounded border-purple-500 bg-black text-purple-500">
                     <div class="flex-1">
-                        <span class="task-phase-tag ${task.completed ? 'text-slate-500' : 'text-blue-400'} mb-2 inline-block">${task.phase}</span>
-                        <p class="text-sm font-bold text-white leading-snug">${task.name}</p>
-                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-purple-400 font-bold hover:text-white flex items-center gap-1 mt-2"><i data-lucide="external-link" class="w-3 h-3"></i> Learning Node</a>
-                    </div><span class="text-[10px] font-black text-slate-500">+${task.xp}XP</span>`;
+                        <span class="task-phase-tag ${task.completed ? 'text-slate-500' : 'text-purple-400'} mb-1 inline-block">${task.phase}</span>
+                        <p class="text-sm font-bold ${task.completed ? 'text-slate-500 line-through' : 'text-white'}">${task.name}</p>
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-blue-400 font-bold hover:underline flex items-center gap-1 mt-2 uppercase tracking-tighter"><i data-lucide="external-link" class="w-3 h-3"></i> Learning Node</a>
+                    </div><span class="text-[10px] font-black text-blue-500">+${task.xp}XP</span>`;
                 container.appendChild(div);
             });
             lucide.createIcons();
@@ -599,13 +465,9 @@
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
-                const heroPage = document.getElementById('heroPage');
-                const nameEntryPage = document.getElementById('nameEntryPage');
-                const setupForm = document.getElementById('setupForm');
-                const initBtn = document.getElementById('initBtn');
-                if (!heroPage.classList.contains('hidden')) { enterSystem(); } 
-                else if (!nameEntryPage.classList.contains('hidden')) { proceedToAwakening(); }
-                else if (!setupForm.classList.contains('hidden') && !initBtn.disabled) { startEvolution(); }
+                if (!document.getElementById('heroPage').classList.contains('hidden')) enterSystem();
+                else if (!document.getElementById('nameEntryPage').classList.contains('hidden')) proceedToAwakening();
+                else if (!document.getElementById('setupForm').classList.contains('hidden')) startEvolution();
             }
         });
     </script>
