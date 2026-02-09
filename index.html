@@ -14,7 +14,7 @@
             --neon-purple: #9d72ff;
             --deep-purple: #4a148c;
             --text-lilac: #e0d7f5;
-            --glass-dark: rgba(15, 10, 30, 0.85);
+            --glass-dark: rgba(15, 10, 30, 0.9);
         }
         
         body { 
@@ -31,7 +31,7 @@
         .tree-node { animation: pulse 3s infinite ease-in-out; fill: var(--neon-purple); }
         @keyframes pulse { 0%, 100% { opacity: 0.4; r: 4; } 50% { opacity: 1; r: 6; } }
 
-        .glass { background: var(--glass-dark); backdrop-filter: blur(30px); border: 1px solid rgba(157, 114, 255, 0.2); }
+        .glass { background: var(--glass-dark); backdrop-filter: blur(40px); border: 1px solid rgba(157, 114, 255, 0.2); }
         .portal-transition { transition: all 0.6s cubic-bezier(0.7, 0, 0.3, 1); }
         .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
@@ -39,12 +39,12 @@
         #sidebar { transition: all 0.5s ease; width: 320px; transform-origin: left; flex-shrink: 0; }
         #sidebar.collapsed { width: 0; padding: 0; opacity: 0; transform: scaleX(0); pointer-events: none; }
         
-        /* 结果栏收起 */
+        /* 结果栏收起 - 30% 宽度 */
         #resultModal { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); width: 30%; transform: translateX(110%); flex-shrink: 0; }
         #resultModal.active { transform: translateX(0); }
 
-        /* 中间内容区 - 确保绝对居中 */
-        #mainContentArea { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); flex: 1; display: flex; justify-content: center; align-items: center; overflow-y: auto; position: relative; }
+        /* 中间内容区 - 动态位移核心 */
+        #mainContentArea { transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-y: auto; }
 
         .toggle-btn { position: fixed; top: 1.5rem; z-index: 1000; background: var(--bg-dark); border: 1px solid var(--neon-purple); color: var(--neon-purple); padding: 10px; border-radius: 14px; transition: all 0.3s; cursor: pointer; }
         .toggle-btn:hover { box-shadow: 0 0 20px var(--neon-purple); background: var(--deep-purple); }
@@ -99,14 +99,17 @@
     <!-- MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
         
+        <!-- SIDEBAR TOGGLE (Left) -->
         <button id="sidebarToggleBtn" onclick="toggleSidebar()" class="toggle-btn left-6">
             <i id="sidebarIconToggle" data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
 
+        <!-- RESULT TOGGLE (Right) -->
         <button id="resultToggleBtn" onclick="toggleResult()" class="toggle-btn right-6 hidden">
             <i id="resultIconToggle" data-lucide="chevron-right" class="w-5 h-5"></i>
         </button>
 
+        <!-- SIDEBAR -->
         <aside id="sidebar" class="glass border-r border-purple-500/20 flex flex-col p-6 z-50 relative">
             <div class="mt-16 mb-6 space-y-4">
                 <div class="flex items-center justify-between">
@@ -139,9 +142,9 @@
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA (Truly Centralized) -->
-        <section id="mainContentArea">
-            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10">
+        <!-- CENTER CONTENT AREA (Truly Centralized) -->
+        <section id="mainContentArea" class="p-6">
+            <div id="setupForm" class="max-w-lg w-full glass p-12 rounded-[3.5rem] shadow-2xl space-y-10 mx-auto">
                 <div class="text-center space-y-2">
                     <h2 class="text-4xl font-black text-white tracking-tight">Awakening System</h2>
                     <p class="text-purple-300 text-sm opacity-70">Define your path and core ambition</p>
@@ -162,13 +165,13 @@
                     </div>
                     <div class="space-y-3">
                         <label class="text-[10px] font-bold text-purple-400 uppercase tracking-[0.2em] ml-2">Core Ambition</label>
-                        <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-5 rounded-2xl bg-white/5 border-none outline-none text-white text-lg font-semibold focus:ring-2 focus:ring-purple-500 transition-all">
+                        <input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-5 rounded-2xl bg-white/5 border-none outline-none text-black text-lg font-semibold focus:ring-2 focus:ring-purple-500 transition-all">
                     </div>
                     <button id="initBtn" onclick="startEvolution()" class="w-full py-6 bg-[#9d72ff] text-black font-black text-lg rounded-2xl shadow-2xl hover:bg-white transition-all transform hover:scale-[1.02]">INITIALIZE EVOLUTION</button>
                 </div>
             </div>
             
-            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl">
+            <div id="dashboard" class="hidden text-center space-y-8 w-full max-w-2xl mx-auto">
                 <div class="w-28 h-28 bg-purple-900/20 border border-purple-500/30 rounded-[2.5rem] shadow-2xl flex items-center justify-center mx-auto animate-bounce">
                     <i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i>
                 </div>
@@ -183,7 +186,7 @@
             </div>
         </section>
 
-        <!-- RESULT MODAL -->
+        <!-- RESULT MODAL (30% Width) -->
         <aside id="resultModal" class="glass border-l border-purple-500/20 flex flex-col overflow-hidden shadow-[-20px_0_50px_rgba(0,0,0,0.5)]">
             <div class="p-8 border-b border-purple-500/20 flex flex-col gap-4 mt-16">
                 <div class="flex items-center gap-2">
@@ -218,8 +221,7 @@
         const _part1 = "AIzaSyC1DSvs";
         const _part2 = "fpU_xlUf4yYro";
         const _part3 = "9UXcj_XgfR9s10";
-        // 建议使用 gemini-1.5-flash 以获得最高稳定性
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_part1+_part2+_part3}`;
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${_part1+_part2+_part3}`;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         let pendingTask = null;
@@ -231,7 +233,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_v34');
+            const saved = localStorage.getItem('gemify_v35');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -243,8 +245,9 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_v34', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_v35', JSON.stringify(session)); updateGlobalXP(); }
 
+        // --- UI TOGGLES ---
         function toggleSidebar() {
             const sb = document.getElementById('sidebar');
             const btn = document.getElementById('sidebarToggleBtn');
@@ -268,6 +271,7 @@
             lucide.createIcons();
         }
 
+        // --- NAVIGATION ---
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
@@ -299,19 +303,10 @@
             }, 600);
         }
 
-        function logout() {
-            const hero = document.getElementById('heroPage');
-            const app = document.getElementById('appPage');
-            app.classList.add('opacity-0', 'pointer-events-none');
-            setTimeout(() => {
-                app.classList.add('hidden');
-                hero.classList.remove('hidden', 'hidden-state');
-            }, 600);
-        }
-
+        function logout() { location.reload(); }
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE (FIXED) ---
+        // --- AI ENGINE (REBUILT) ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
@@ -328,12 +323,13 @@
                 });
                 const data = await response.json();
                 let text = data.candidates[0].content.parts[0].text;
-                // 清洗 AI 可能返回的 Markdown 代码块
-                text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+                // 强制提取 JSON 部分，防止 AI 废话
+                const jsonStart = text.indexOf('{');
+                const jsonEnd = text.lastIndexOf('}') + 1;
+                text = text.substring(jsonStart, jsonEnd);
                 return JSON.parse(text);
             } catch (e) {
                 console.error("AI Error:", e);
-                // 更有意义的 Fallback 数据
                 return { 
                     tasks: [
                         {stage: 1, name: `Research fundamental concepts of ${title}`, xp: 5, url: `https://www.google.com/search?q=${title}+basics`},
