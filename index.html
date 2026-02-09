@@ -62,6 +62,7 @@
 
         /* 强制输入框文字为白色 */
         #inputAmbition { color: white !important; background: rgba(255, 255, 255, 0.05); }
+        #inputAmbition::placeholder { color: rgba(255, 255, 255, 0.3); }
     </style>
 </head>
 <body>
@@ -210,11 +211,11 @@
     </div>
 
     <script>
-        // --- BACKGROUND AI CONFIG (OUTFUSCATED) ---
+        // --- BACKGROUND AI CONFIG ---
         const _p1 = "AIzaSyC1DSvs";
         const _p2 = "fpU_xlUf4yYro";
         const _p3 = "9UXcj_XgfR9s10";
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${_p1+_p2+_p3}`;
+        const KEY = _p1 + _p2 + _p3;
 
         let session = { playerName: "", playerRole: "Warrior", currentId: null, ambitionVault: [], archivedVault: [] };
         let pendingTask = null;
@@ -226,7 +227,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_final_v46');
+            const saved = localStorage.getItem('gemify_final_v47');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -237,7 +238,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_final_v46', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_final_v47', JSON.stringify(session)); updateGlobalXP(); }
 
         function showApp() {
             document.getElementById('sidebar').classList.remove('hidden');
@@ -297,7 +298,7 @@
         function logout() { location.reload(); }
         function resetSystem() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
 
-        // --- AI ENGINE (REBUILT FOR STABILITY) ---
+        // --- AI ENGINE (AUTO-SWITCHER & ROBUST PARSER) ---
         async function fetchGeminiTasks(title, role) {
             const prompt = `You are the Gemify Evolution Engine. Break down "${title}" for a ${role} into a granular progression. 
             Requirements:
@@ -305,24 +306,35 @@
             2. For each stage, assign XP. XP MUST be a multiple of 5 (e.g., 5, 10, 15, 20...).
             3. Provide a resource_url from professional academies (W3Schools, MDN, Coursera, Udemy, official docs) or YouTube.
             4. Suggest 3 essential Apps/Tools.
-            Return ONLY a raw JSON object, no markdown backticks: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
+            Return ONLY a raw JSON object: { "tasks": [{"stage": 1, "name": "...", "xp": 5, "url": "..."}], "apps": ["App1", "App2"] }`;
             
-            try {
-                const response = await fetch(API_URL, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-                const data = await response.json();
-                let text = data.candidates[0].content.parts[0].text;
-                
-                // 核心修复：正则提取 JSON 块
-                const jsonMatch = text.match(/\{[\s\S]*\}/);
-                if (!jsonMatch) throw new Error("Invalid Format");
-                return JSON.parse(jsonMatch[0]);
-            } catch (e) {
-                console.error("AI Error:", e);
-                return null; 
+            // 尝试列表：先试比赛要求的，再试稳定的
+            const models = ["gemini-3-flash-preview", "gemini-1.5-flash"];
+            
+            for (let model of models) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${KEY}`;
+                    const response = await fetch(url, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    
+                    if (!response.ok) continue; // 如果 404 或 400，尝试下一个模型
+
+                    const data = await response.json();
+                    let text = data.candidates[0].content.parts[0].text;
+                    
+                    // 强力提取 JSON 块
+                    const jsonMatch = text.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) continue;
+                    
+                    window.lastUsedModel = model;
+                    return JSON.parse(jsonMatch[0]);
+                } catch (e) {
+                    console.warn(`Model ${model} failed, trying next...`);
+                }
             }
+            return null; // 全部失败
         }
 
         async function startEvolution() {
@@ -341,7 +353,7 @@
             
             if (!result) {
                 btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
-                document.getElementById('logContainer').innerHTML += `<p class="text-red-400">> [System: AI Link Failed. Check API Key.]</p>`;
+                document.getElementById('logContainer').innerHTML += `<p class="text-red-400">> [System: AI Link Failed. Check API Key or Network.]</p>`;
                 return;
             }
 
@@ -349,7 +361,7 @@
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: result.tasks.map(t => ({...t, completed: false})), apps: result.apps });
             session.currentId = id;
 
-            await runLogs(title);
+            await runLogs(title, window.lastUsedModel);
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION";
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
@@ -357,16 +369,8 @@
             renderTasks(session.ambitionVault[0]); renderVaults(); renderApps(result.apps); save();
         }
 
-        async function deleteAmbition(id) {
-            if (!confirm("DANGER: Permanently delete this ambition?")) return;
-            const idx = session.archivedVault.findIndex(a => a.id === id);
-            session.archivedVault.splice(idx, 1);
-            if (session.currentId === id) createNewAmbition();
-            save(); renderVaults();
-        }
-
-        async function runLogs(title) {
-            const logs = [`[Syncing with Gemini 3 Flash Preview...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
+        async function runLogs(title, model) {
+            const logs = [`[Syncing with ${model}...]`, `[Analyzing "${title}" context...]`, `[Calculating XP difficulty nodes...]`, `[Evolution Path Ready.]` ];
             const container = document.getElementById('logContainer');
             for (const log of logs) {
                 const p = document.createElement('p'); p.innerText = `> ${log}`;
