@@ -9,117 +9,116 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --bg-dark: #0a0a12;
-            --neon-purple: #a855f7;
-            --neon-blue: #3b82f6;
-            --glass-dark: rgba(15, 15, 25, 0.8);
+            --bg-dark: #05050a;
+            --neon-purple: #c084fc; /* 调亮了紫色 */
+            --neon-blue: #60a5fa;   /* 调亮了蓝色 */
+            --glass-light: rgba(255, 255, 255, 0.05);
         }
 
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--bg-dark);
+            /* 增加背景光晕，让视觉更“凉”更通透 */
             background-image: 
-                linear-gradient(rgba(168, 85, 247, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(168, 85, 247, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px; /* 网格地板效果 */
-            color: #e2e8f0; 
+                radial-gradient(circle at 20% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            color: #f1f5f9; 
             overflow: hidden; 
             height: 100vh; 
         }
 
-        /* --- 霓虹文字效果 --- */
+        /* --- 霓虹文字 --- */
         .neon-text {
-            text-shadow: 0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.4);
-        }
-        .neon-border {
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+            text-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+            color: white;
         }
 
         /* --- 渐变按钮 --- */
         .btn-gradient {
             background: linear-gradient(90deg, #a855f7, #3b82f6);
-            transition: all 0.3s ease;
-            box-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
         }
         .btn-gradient:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
         }
 
         /* --- 全局固定 Logo --- */
         .fixed-site-logo {
             position: fixed; top: 1.5rem; right: 1.5rem; z-index: 9999; pointer-events: none;
-            filter: drop-shadow(0 0 10px var(--neon-purple));
+            filter: drop-shadow(0 0 8px var(--neon-purple));
         }
 
         /* --- 进化树动画 --- */
         .branch { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: draw 4s forwards ease-out; }
         @keyframes draw { to { stroke-dashoffset: 0; } }
         .tree-node { animation: pulse 3s infinite ease-in-out; }
-        @keyframes pulse { 0%, 100% { opacity: 0.5; r: 4; } 50% { opacity: 1; r: 6; } }
+        @keyframes pulse { 0%, 100% { opacity: 0.6; r: 4; } 50% { opacity: 1; r: 6; } }
 
         /* --- UI 基础样式 --- */
-        .glass { background: var(--glass-dark); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .glass { background: rgba(15, 15, 25, 0.7); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .portal-transition { transition: all 0.8s cubic-bezier(0.7, 0, 0.3, 1); }
-        .hidden-state { opacity: 0; transform: scale(0.95) translateY(20px); pointer-events: none; }
+        .hidden-state { opacity: 0; transform: scale(0.98) translateY(10px); pointer-events: none; }
         
-        .role-card { transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255,255,255,0.03); }
-        .role-card.active { border-color: var(--neon-purple); background: rgba(168, 85, 247, 0.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.2); }
+        .role-card { transition: all 0.3s ease; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.05); background: rgba(255,255,255,0.02); }
+        .role-card.active { border-color: var(--neon-purple); background: rgba(168, 85, 247, 0.08); box-shadow: 0 0 20px rgba(168, 85, 247, 0.15); }
         
         #sidebar { transition: all 0.5s ease; width: 320px; }
         #sidebar.collapsed { width: 0; padding: 0; margin: 0; opacity: 0; pointer-events: none; }
         
         .sidebar-item { transition: all 0.2s ease; border-left: 3px solid transparent; }
-        .sidebar-item:hover { background: rgba(255, 255, 255, 0.05); }
-        .sidebar-item.active { background: rgba(168, 85, 247, 0.1); border-left-color: var(--neon-purple); }
+        .sidebar-item:hover { background: rgba(255, 255, 255, 0.03); }
+        .sidebar-item.active { background: rgba(168, 85, 247, 0.08); border-left-color: var(--neon-purple); }
 
-        .system-log-glass { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--neon-purple); font-family: 'Fira Code', monospace; }
+        .system-log-glass { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(168, 85, 247, 0.2); color: #d8b4fe; font-family: 'Fira Code', monospace; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
 
-        #rankGuidePopover { transition: all 0.3s ease; transform: scale(0.9); opacity: 0; pointer-events: none; }
+        #rankGuidePopover { transition: all 0.3s ease; transform: scale(0.95); opacity: 0; pointer-events: none; }
         #rankGuidePopover.active { transform: scale(1); opacity: 1; pointer-events: auto; }
         
-        .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+        .task-phase-tag { font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; background: rgba(168, 85, 247, 0.15); color: #e9d5ff; border: 1px solid rgba(168, 85, 247, 0.2); }
         .ai-loading { animation: pulse-bg 1.5s infinite; }
-        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes pulse-bg { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
     </style>
 </head>
 <body>
 
     <!-- 全局固定右上角 LOGO -->
     <div class="fixed-site-logo">
-        <svg width="50" height="50" viewBox="0 0 200 200">
-            <g stroke="#9d72ff" stroke-width="3" fill="none">
-                <path d="M100 30 L112 50 L100 70 L88 50 Z" fill="#9d72ff" stroke="none"/>
+        <svg width="60" height="60" viewBox="0 0 200 200">
+            <g stroke="#c084fc" stroke-width="3" fill="none">
+                <path d="M100 30 L112 50 L100 70 L88 50 Z" fill="#c084fc" stroke="none"/>
                 <path d="M100 85 L100 180" stroke-width="4"/>
                 <path d="M100 120 L75 95 L75 85"/><path d="M100 120 L125 95 L125 85"/>
                 <path d="M100 145 L60 115 L60 105"/><path d="M100 145 L140 115 L140 105"/>
-                <circle cx="75" cy="85" r="4" fill="#9d72ff"/><circle cx="125" cy="85" r="4" fill="#9d72ff"/>
-                <circle cx="60" cy="105" r="4" fill="#9d72ff"/><circle cx="140" cy="105" r="4" fill="#9d72ff"/>
+                <circle cx="75" cy="85" r="4" fill="#c084fc"/><circle cx="125" cy="85" r="4" fill="#c084fc"/>
+                <circle cx="60" cy="105" r="4" fill="#c084fc"/><circle cx="140" cy="105" r="4" fill="#c084fc"/>
             </g>
         </svg>
     </div>
 
-    <!-- PAGE 1: HERO SECTION (完全还原图片风格) -->
+    <!-- PAGE 1: HERO SECTION -->
     <section id="heroPage" class="fixed inset-0 flex flex-col md:flex-row items-center justify-center p-6 md:p-20 gap-16 z-[100] portal-transition">
         <div class="w-full md:w-1/2 flex justify-center items-center">
-            <!-- 图片中的电路树风格 -->
-            <svg width="350" height="350" viewBox="0 0 200 200" class="drop-shadow-[0_0_30px_rgba(168,85,247,0.5)]">
-                <g stroke="#9d72ff" stroke-width="2.5" fill="none" class="branch">
-                    <circle cx="100" cy="40" r="12" fill="#9d72ff" class="tree-node" />
+            <svg width="380" height="380" viewBox="0 0 200 200" class="drop-shadow-[0_0_40px_rgba(168,85,247,0.4)]">
+                <g stroke="#c084fc" stroke-width="2.5" fill="none" class="branch">
+                    <circle cx="100" cy="40" r="12" fill="#c084fc" class="tree-node" />
                     <path d="M100 60 L100 180" stroke-width="5" />
-                    <path d="M100 100 C 140 100, 150 80, 160 60" stroke="#3b82f6" />
+                    <path d="M100 100 C 140 100, 150 80, 160 60" stroke="#60a5fa" />
                     <path d="M100 100 C 60 100, 50 80, 40 60" stroke="#f472b6" />
-                    <path d="M100 130 C 150 130, 160 110, 170 80" stroke="#3b82f6" />
+                    <path d="M100 130 C 150 130, 160 110, 170 80" stroke="#60a5fa" />
                     <path d="M100 130 C 50 130, 40 110, 30 80" stroke="#f472b6" />
-                    <circle cx="160" cy="60" r="5" fill="#3b82f6" /><circle cx="40" cy="60" r="5" fill="#f472b6" />
-                    <circle cx="170" cy="80" r="5" fill="#3b82f6" /><circle cx="30" cy="80" r="5" fill="#f472b6" />
+                    <circle cx="160" cy="60" r="5" fill="#60a5fa" /><circle cx="40" cy="60" r="5" fill="#f472b6" />
+                    <circle cx="170" cy="80" r="5" fill="#60a5fa" /><circle cx="30" cy="80" r="5" fill="#f472b6" />
                 </g>
             </svg>
         </div>
         <div class="w-full md:w-1/2 text-center md:text-left space-y-6">
-            <h2 class="text-sm font-bold tracking-[0.4em] text-slate-400 uppercase opacity-80">AI Evolution Engine</h2>
+            <h2 class="text-sm font-bold tracking-[0.4em] text-blue-400 uppercase opacity-90">AI Evolution Engine</h2>
             <h1 class="text-8xl md:text-9xl font-black tracking-tighter text-white neon-text">GEMIFY</h1>
             <p class="text-2xl font-light text-slate-300">Discover. Define. Dominate.</p>
             <button onclick="enterSystem()" class="px-12 py-5 btn-gradient text-white font-bold rounded-full flex items-center gap-3 mx-auto md:mx-0 text-lg">
@@ -128,22 +127,22 @@
         </div>
     </section>
 
-    <!-- PAGE 1.5: NAME ENTRY (暗黑版) -->
+    <!-- PAGE 1.5: NAME ENTRY -->
     <section id="nameEntryPage" class="fixed inset-0 flex flex-col items-center justify-center p-6 z-[90] portal-transition hidden hidden-state">
-        <div class="max-w-md w-full text-center space-y-8 glass p-12 rounded-[3rem] neon-border">
-            <div class="w-20 h-20 bg-purple-500/10 rounded-3xl flex items-center justify-center mx-auto border border-purple-500/30">
-                <i data-lucide="fingerprint" class="text-purple-400 w-10 h-10"></i>
+        <div class="max-w-md w-full text-center space-y-8 glass p-12 rounded-[3rem] border-purple-500/20">
+            <div class="w-20 h-20 bg-purple-500/10 rounded-3xl flex items-center justify-center mx-auto border border-purple-500/30 shadow-[0_0_30px_rgba(168,85,247,0.1)]">
+                <i data-lucide="fingerprint" class="text-purple-300 w-10 h-10"></i>
             </div>
             <h2 class="text-4xl font-black text-white tracking-tight">What's your name?</h2>
-            <input type="text" id="inputName" placeholder="Enter your identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-black/40 border border-white/10 text-white outline-none focus:border-purple-500 transition-all shadow-2xl">
+            <input type="text" id="inputName" placeholder="Enter your identity..." class="w-full p-6 text-center text-2xl font-bold rounded-3xl bg-white/5 border border-white/10 text-white outline-none focus:border-purple-400 transition-all">
             <button onclick="proceedToAwakening()" class="w-full py-5 btn-gradient text-white font-bold rounded-2xl shadow-lg">AWAKEN IDENTITY</button>
         </div>
     </section>
 
-    <!-- PAGE 2: MAIN APP (暗黑版) -->
+    <!-- PAGE 2: MAIN APP -->
     <main id="appPage" class="flex h-screen opacity-0 pointer-events-none hidden portal-transition relative">
         
-        <button id="sidebarToggle" onclick="toggleSidebar()" class="fixed left-[335px] top-7 p-2 glass rounded-xl shadow-lg hover:bg-white/5 transition-all text-purple-400 z-[100]">
+        <button id="sidebarToggle" onclick="toggleSidebar()" class="fixed left-[335px] top-7 p-2 glass rounded-xl shadow-lg hover:bg-white/5 transition-all text-purple-300 z-[100]">
             <i id="toggleIcon" data-lucide="chevron-left" class="w-5 h-5"></i>
         </button>
 
@@ -151,22 +150,21 @@
             <div class="mb-6 space-y-6">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div id="sidebarIcon" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
+                        <div id="sidebarIcon" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white shadow-lg"><i data-lucide="user"></i></div>
                         <div>
                             <h3 id="statName" class="font-bold text-white text-base">Player</h3>
                             <span id="rankBadge" class="text-[10px] font-black px-2 py-0.5 bg-purple-500 text-white rounded uppercase">E Rank</span>
                         </div>
                     </div>
-                    <button onclick="toggleRankGuide()" class="p-2 glass rounded-lg hover:bg-white/5 transition-all"><span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Ranks</span></button>
+                    <button onclick="toggleRankGuide()" class="p-2 glass rounded-lg hover:bg-white/5 transition-all"><span class="text-[10px] font-bold text-purple-300 uppercase tracking-widest">Ranks</span></button>
                 </div>
-                <!-- Rank Guide Popover -->
-                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-6 rounded-3xl shadow-2xl z-[100] neon-border">
-                    <h4 class="text-[10px] font-black text-purple-400 uppercase tracking-widest mb-4">Rank Progression</h4>
+                <div id="rankGuidePopover" class="absolute left-[330px] top-6 w-64 glass p-6 rounded-3xl shadow-2xl z-[100] border-purple-500/20">
+                    <h4 class="text-[10px] font-black text-purple-300 uppercase tracking-widest mb-4">Rank Progression</h4>
                     <div id="rankGuideList" class="space-y-2"></div>
                 </div>
                 <div class="space-y-2">
-                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase"><span>Global XP</span><span id="xpText" class="text-purple-400">0/100</span></div>
-                    <div class="w-full h-2 bg-white/5 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-1000" style="width: 0%"></div></div>
+                    <div class="flex justify-between text-[10px] font-black text-slate-400 uppercase"><span>Global XP</span><span id="xpText" class="text-purple-300">0/100</span></div>
+                    <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden"><div id="xpBar" class="h-full bg-gradient-to-r from-purple-400 to-blue-400 transition-all duration-1000" style="width: 0%"></div></div>
                 </div>
             </div>
             <button onclick="createNewAmbition()" class="flex items-center justify-center gap-2 w-full py-4 mb-8 bg-white/5 border border-white/10 text-white rounded-2xl font-bold text-sm hover:bg-white/10 transition-all shadow-lg"><i data-lucide="plus" class="w-4 h-4"></i> New Ambition</button>
@@ -174,28 +172,28 @@
                 <div><h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Ambition Vault</h4><div id="vaultList" class="space-y-2"></div></div>
                 <div><h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 px-2">Archived</h4><div id="archivedList" class="space-y-2 opacity-40"></div></div>
             </div>
-            <div class="mt-auto pt-6 border-t border-white/5 space-y-2">
+            <div class="mt-auto pt-6 border-t border-white/10 space-y-2">
                 <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest hover:bg-white/5 rounded-xl transition-all"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</button>
                 <button onclick="resetSystem()" class="flex items-center justify-center gap-2 w-full py-3 text-[11px] font-bold text-red-400/60 uppercase tracking-widest hover:bg-red-500/5 rounded-xl transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i> Reset System</button>
             </div>
         </aside>
 
         <section class="flex-1 flex flex-col items-center justify-center p-12 relative overflow-y-auto">
-            <div id="setupForm" class="max-w-xl w-full glass p-12 rounded-[3rem] shadow-2xl space-y-10 neon-border">
+            <div id="setupForm" class="max-w-xl w-full glass p-12 rounded-[3rem] shadow-2xl space-y-10 border-purple-500/20">
                 <div class="text-center"><h2 class="text-3xl font-extrabold text-white">Awakening System</h2><p class="text-slate-400 text-sm">Define your path and ambition</p></div>
                 <div class="space-y-8">
-                    <div class="space-y-3"><label class="text-[10px] font-bold text-purple-400 uppercase ml-2 tracking-widest">Select Role</label>
+                    <div class="space-y-3"><label class="text-[10px] font-bold text-purple-300 uppercase ml-2 tracking-widest">Select Role</label>
                         <div class="grid grid-cols-2 gap-4">
-                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-8 rounded-3xl flex flex-col items-center gap-3"><i data-lucide="sword" class="text-purple-400"></i><span class="text-xs font-bold uppercase tracking-widest">Warrior</span></div>
-                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-8 rounded-3xl flex flex-col items-center gap-3"><i data-lucide="wand-2" class="text-blue-400"></i><span class="text-xs font-bold uppercase tracking-widest">Mage</span></div>
+                            <div onclick="selectRole('Warrior')" id="role-Warrior" class="role-card active p-8 rounded-3xl flex flex-col items-center gap-3"><i data-lucide="sword" class="text-purple-300"></i><span class="text-xs font-bold uppercase tracking-widest">Warrior</span></div>
+                            <div onclick="selectRole('Mage')" id="role-Mage" class="role-card p-8 rounded-3xl flex flex-col items-center gap-3"><i data-lucide="wand-2" class="text-blue-300"></i><span class="text-xs font-bold uppercase tracking-widest">Mage</span></div>
                         </div>
                     </div>
-                    <div class="space-y-3"><label class="text-[10px] font-bold text-purple-400 uppercase ml-2 tracking-widest">Core Ambition</label><input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-6 rounded-3xl bg-black/40 border border-white/10 text-white outline-none focus:border-purple-500 transition-all"></div>
+                    <div class="space-y-3"><label class="text-[10px] font-bold text-purple-300 uppercase ml-2 tracking-widest">Core Ambition</label><input type="text" id="inputAmbition" placeholder="e.g. Master Software Architect" class="w-full p-6 rounded-3xl bg-white/5 border border-white/10 text-white outline-none focus:border-purple-400 transition-all"></div>
                     <button id="initBtn" onclick="startEvolution()" class="w-full py-6 btn-gradient text-white font-black rounded-3xl shadow-xl text-lg">INITIALIZE EVOLUTION</button>
                 </div>
             </div>
             <div id="dashboard" class="hidden text-center space-y-8">
-                <div class="w-28 h-28 bg-purple-500/10 rounded-[2.5rem] border border-purple-500/30 flex items-center justify-center mx-auto mb-6 animate-pulse shadow-[0_0_50px_rgba(168,85,247,0.2)]"><i data-lucide="shield-check" class="w-14 h-14 text-purple-400"></i></div>
+                <div class="w-28 h-28 bg-purple-500/10 rounded-[2.5rem] border border-purple-500/30 flex items-center justify-center mx-auto mb-6 animate-pulse shadow-[0_0_50px_rgba(168,85,247,0.15)]"><i data-lucide="shield-check" class="w-14 h-14 text-purple-300"></i></div>
                 <h1 id="activeTitle" class="text-6xl md:text-7xl font-black text-white tracking-tighter uppercase leading-tight neon-text"></h1>
                 <p class="text-slate-400 max-w-md mx-auto text-lg">Evolution path is active. Complete tasks to increase your Rank.</p>
                 <button onclick="toggleModal(true)" class="px-12 py-5 glass text-white font-bold rounded-full shadow-lg hover:bg-white/5 transition-all flex items-center gap-3 mx-auto border border-white/10">VIEW QUEST LOG <i data-lucide="layout-list"></i></button>
@@ -225,7 +223,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons(); renderRankGuide();
-            const saved = localStorage.getItem('gemify_dark_v28');
+            const saved = localStorage.getItem('gemify_dark_v29');
             if (saved) {
                 session = JSON.parse(saved);
                 if (session.ambitionVault.length > 0 || session.archivedVault.length > 0) {
@@ -237,7 +235,7 @@
             }
         });
 
-        function save() { localStorage.setItem('gemify_dark_v28', JSON.stringify(session)); updateGlobalXP(); }
+        function save() { localStorage.setItem('gemify_dark_v29', JSON.stringify(session)); updateGlobalXP(); }
 
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -251,11 +249,11 @@
         function enterSystem() {
             const hero = document.getElementById('heroPage');
             const nameEntry = document.getElementById('nameEntryPage');
-            const app = document.getElementById('appPage');
             hero.classList.add('hidden-state');
             setTimeout(() => {
                 hero.classList.add('hidden');
                 if (session.playerName) {
+                    const app = document.getElementById('appPage');
                     app.classList.remove('hidden');
                     setTimeout(() => app.classList.remove('opacity-0', 'pointer-events-none'), 50);
                     document.getElementById('statName').innerText = session.playerName;
@@ -296,7 +294,7 @@
 
         function resetSystem() {
             if (confirm("DANGER: Clear all data?")) {
-                localStorage.removeItem('gemify_dark_v28');
+                localStorage.removeItem('gemify_dark_v29');
                 location.reload();
             }
         }
@@ -333,18 +331,34 @@
             toggleModal(false); renderVaults();
         }
 
+        // --- AI ENGINE (FIXED & REINFORCED) ---
         async function fetchGeminiTasks(title, role) {
-            const prompt = `You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}. Break this goal into 5 HIGHLY SPECIFIC, technical, and humanized tasks. Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].`;
+            const prompt = `
+                You are the Gemify Evolution Engine. A user wants to master "${title}" as a ${role}.
+                Break this goal into 5 HIGHLY SPECIFIC, technical, and humanized tasks.
+                
+                CRITICAL RULES:
+                1. DO NOT use generic phrases like "Analyze core pillars", "Practice basics", or "Identify barriers".
+                2. USE terminology specific to "${title}". (e.g. if Cubing: mention F2L algorithms, finger tricks. if Flowerist: mention spiral technique, hydration).
+                3. Phase I: Cognitive Foundation (2 tasks).
+                4. Phase II: Intense Practical Application (2 tasks).
+                5. Phase III: Mastery Breakthrough (1 task).
+                
+                Return ONLY a JSON array: [{"phase": "...", "name": "...", "xp": number, "search": "..."}].
+            `;
+            
             try {
                 const response = await fetch(API_URL, {
                     method: "POST", headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
+                if (!response.ok) throw new Error("API_ERROR");
                 const data = await response.json();
                 const text = data.candidates[0].content.parts[0].text;
                 window.lastEngine = "GEMINI_3_FLASH_PREVIEW_ACTIVE";
                 return JSON.parse(text.replace(/```json/g, "").replace(/```/g, "").trim());
             } catch (e) {
+                console.warn("AI Failed, using Fallback.");
                 window.lastEngine = "FALLBACK_PROTOCOL";
                 return [
                     { phase: "Phase I: Neural Mapping", name: `Deconstruct the technical architecture of ${title}`, xp: 40, search: `${title} technicals` },
@@ -360,15 +374,20 @@
             const title = document.getElementById('inputAmbition').value.trim();
             const btn = document.getElementById('initBtn');
             if (!title) return alert("State your ambition.");
+
             document.getElementById('taskContainer').innerHTML = '';
             document.getElementById('logContainer').innerHTML = `<p>> [Gemify: Resetting Neural Link...]</p>`;
+
             btn.disabled = true; btn.innerText = "AI THINKING..."; btn.classList.add('ai-loading');
             toggleModal(true); 
+
             const tasks = await fetchGeminiTasks(title, session.playerRole);
             const id = Date.now();
             session.ambitionVault.unshift({ id, title, role: session.playerRole, tasks: tasks.map(t => ({...t, completed: false})) });
             session.currentId = id;
+
             await runLogs(title, window.lastEngine);
+
             btn.disabled = false; btn.innerText = "INITIALIZE EVOLUTION"; btn.classList.remove('ai-loading');
             document.getElementById('activeTitle').innerText = title;
             document.getElementById('setupForm').classList.add('hidden');
@@ -420,7 +439,7 @@
                 const div = document.createElement('div');
                 div.className = `sidebar-item p-4 rounded-2xl text-xs font-bold flex items-center justify-between group ${session.currentId === a.id ? 'active' : ''}`;
                 div.onclick = () => loadAmbition(a.id);
-                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-400"></i><span class="truncate text-slate-200">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg transition-all"><i data-lucide="archive" class="w-4 h-4 text-slate-500"></i></button>`;
+                div.innerHTML = `<div class="flex items-center gap-3 truncate"><i data-lucide="target" class="w-4 h-4 text-purple-300"></i><span class="truncate text-slate-200">${a.title}</span></div><button onclick="archiveAmbition(event, ${a.id})" class="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded-lg transition-all"><i data-lucide="archive" class="w-4 h-4 text-slate-500"></i></button>`;
                 activeList.appendChild(div);
             });
             session.archivedVault.forEach(a => {
@@ -439,12 +458,12 @@
                 const div = document.createElement('div');
                 div.className = "p-6 rounded-3xl bg-white/5 border border-white/10 flex items-start gap-4 shadow-xl";
                 div.innerHTML = `
-                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-white/20 bg-black/40 text-purple-500 focus:ring-purple-500">
+                    <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${index})" class="mt-1 w-6 h-6 rounded-lg border-white/20 bg-black/40 text-purple-400 focus:ring-purple-400">
                     <div class="flex-1">
                         <span class="task-phase-tag mb-2 inline-block">${task.phase}</span>
                         <p class="text-sm font-bold text-white leading-snug">${task.name}</p>
-                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-blue-400 font-bold hover:underline flex items-center gap-1 mt-3"><i data-lucide="external-link" class="w-3 h-3"></i> Learning Node</a>
-                    </div><span class="text-[10px] font-black text-purple-400">+${task.xp}XP</span>`;
+                        <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(task.search || task.name)}" target="_blank" class="text-[10px] text-blue-300 font-bold hover:underline flex items-center gap-1 mt-3"><i data-lucide="external-link" class="w-3 h-3"></i> Learning Node</a>
+                    </div><span class="text-[10px] font-black text-purple-300">+${task.xp}XP</span>`;
                 container.appendChild(div);
             });
             lucide.createIcons();
